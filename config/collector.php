@@ -115,34 +115,48 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Collector Billable
+    | Collector Collectables
     |--------------------------------------------------------------------------
     |
-    | Below you may define billable entities supported by your Collector driven
-    | application. The Stripe edition of Collector currently only supports a
-    | single billable model entity (team, user, etc.) per application.
+    | Below you may define collectable entities supported by your Collector driven
+    | application. The paystack edition of Collector currently only supports a
+    | single collectable model entity (team, user, etc.) per application.
     |
-    | In addition to defining your billable entity, you may also define its
+    | In addition to defining your collectable entity, you may also define its
     | plans and the plan's features, including a short description of it
     | as well as a "bullet point" listing of its distinctive features.
     |
     */
 
-    'billables' => [
+    'currency' => env('COLLECTOR_CURRENCY', 'GHS'),
 
+    'collectables' => [
         'user' => [
             'model' => User::class,
-
             'trial_days' => 5,
-
             'default_interval' => 'monthly',
-
             'plans' => [
                 [
-                    'name' => 'Plan 1',
+                    'name' => 'Basic',
                     'description' => 'This is a short, human friendly description of the plan.',
-                    'monthly_id' => 'price_id',
-                    'yearly_id' => 'price_id',
+                    'monthly_id' => 'PLN_worid7k3e8v5afz',
+                    'yearly_incentive' => 'Save 10%',
+                    'yearly_id' => "PLN_2y8oe4r1gx7gakr",
+                    'features' => [
+                        'Feature 1',
+                        'Feature 2',
+                        'Feature 3',
+                    ],
+                    'options' => [
+
+                    ]
+                ],
+                [
+                    'name' => 'Standard',
+                    'description' => 'This is a short, human friendly description of the plan.',
+                    'monthly_id' => 'PLN_wc54sx7clavvy6d',
+                    'yearly_id' => 'PLN_b9kvd76fufw4vu9',
+                    'yearly_incentive' => 'Save 10%',
                     'features' => [
                         'Feature 1',
                         'Feature 2',
@@ -150,10 +164,21 @@ return [
                     ],
                 ],
                 [
-                    'name' => 'Plan 2',
+                    'name' => 'Premium',
                     'description' => 'This is a short, human friendly description of the plan.',
-                    'monthly_id' => 'price_id',
-                    'yearly_id' => 'price_id',
+                    'monthly_id' => 'PLN_g47cv05s5jsz29k',
+                    'yearly_id' => null,
+                    'features' => [
+                        'Feature 1',
+                        'Feature 2',
+                        'Feature 3',
+                    ],
+                ],
+                [
+                    'name' => 'Unlimited',
+                    'description' => 'This is a short, human friendly description of the plan.',
+                    'monthly_id' => 'PLN_l2qz2ab1wjhh4yx',
+                    'yearly_id' => null,
                     'features' => [
                         'Feature 1',
                         'Feature 2',

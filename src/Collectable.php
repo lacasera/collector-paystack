@@ -2,9 +2,13 @@
 
 namespace Collector;
 
+use Collector\PayStack\ManagesPlans;
+
 trait Collectable
 {
-    public function bootCollectable()
+    use PayStack;
+
+    public static function bootCollectable()
     {
         static::created(function ($model) {
             $trialDays = 30;
@@ -14,10 +18,28 @@ trait Collectable
             ])->save();
         });
 
-        static::updated(function ($customer) {
-            if ($customer->hasStripeId() && $customer->shouldSyncCustomerDetailsToStripe()) {
-                //
-            }
+//        static::updated(function ($customer) {
+//            if ($customer->hasPayStackId() && $customer->shouldSyncCustomerDetailsToPayStack()) {
+//                //
+//            }
+//        });
+    }
+
+    public function collectorConfiguration($key = null)
+    {
+        $config = collect(config('collector.collectables'))
+            ->map(function ($config, $type) {
+            $config['type'] = $type;
+
+            return $config;
+        })->first(function ($billable, $type) {
+            return $billable['model'] == get_class($this);
         });
+
+        if ($key) {
+            return $config[$key] ?? null;
+        }
+
+        return $config;
     }
 }

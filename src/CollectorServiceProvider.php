@@ -2,9 +2,9 @@
 
 namespace Collector;
 
-use Collector\Http\Livewire\BillingPortal;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
-use Livewire\Livewire;
 
 class CollectorServiceProvider extends ServiceProvider
 {
@@ -20,8 +20,6 @@ class CollectorServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'collector');
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         $this->loadRoutesFrom(__DIR__.'/../routes/routes.php');
-
-        // Livewire::component('billing', BillingPortal::class);
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
@@ -45,6 +43,14 @@ class CollectorServiceProvider extends ServiceProvider
 
             // Registering package commands.
             // $this->commands([]);
+
+          //  Collector::billable(User::class)->checkPlanEligibility(function (User $billable, Plan $plan) {
+                // if ($billable->projects > 5 && $plan->name == 'Basic') {
+                //     throw ValidationException::withMessages([
+                //         'plan' => 'You have too many projects for the selected plan.'
+                //     ]);
+                // }
+            //});
         }
     }
 
@@ -57,5 +63,6 @@ class CollectorServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/collector.php', 'collector');
 
         // Register the main class to use with the facade
+        $this->app->singleton('collector.manager', CollectorManager::class);
     }
 }
