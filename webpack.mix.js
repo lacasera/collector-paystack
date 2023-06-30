@@ -17,4 +17,6 @@ mix.js('resources/js/app.js', 'public/js/app.js').react()
         require('tailwindcss')
     ]);
 
+// mix.copyDirectory('resources/assets', 'public/assets');
+
 mix.disableSuccessNotifications();

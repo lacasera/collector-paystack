@@ -6,15 +6,14 @@ import IconCheckmark from '../Components/Icon/IconCheckmark';
 
 export default function Plans(props) {
    const [frequency, setFrequency] = React.useState('monthly')
-
-   console.log('frequency', frequency)
+   const [isListView, setIsListView] = React.useState(true) //list or grid
   
    return (
-        <Layout>
+        <Layout onSwitchList={() => setIsListView((fndIsListView) => !fndIsListView)} isListView={isListView}>
             <Head title="Plans" />
 
-            <div className='max-w-5xl mx-auto flex flex-col items-center px-5'>
-                <div className='max-w-[600px]'>
+            <div className='w-full sm:max-w-5xl mx-auto flex flex-col items-center px-5'>
+                <div className='w-full sm:max-w-[600px]'>
                     {/* <div className='alert mb-8'>
                         <span className="bg-[#CACED0] border border-gray-400 py-2 px-4 w-full block 
                         text-[15px] rounded-md mb-4 text-gray-700">
@@ -37,7 +36,7 @@ export default function Plans(props) {
                     </div>
 
                     <div className='text-center'>
-                        <div className='flex flex-row items-center justify-center space-x-2 mb-3'>
+                        <div className='flex flex-row items-center justify-center space-x-2 mb-5'>
                             <span className="text-sm font-bold text-gray-900 uppercase">Monthly</span>
                             <label className="relative inline-flex items-center cursor-pointer">
                                 <input 
@@ -60,10 +59,10 @@ export default function Plans(props) {
                         </div>
                     </div>
 
-                    <div className='flex flex-col space-y-5'>
+                    <div className={`grid ${isListView ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2' } gap-5`}>
                         {
                             ['Hobby', 'Growth', 'Advanced'].map((plan, index) => (
-                                <div className='bg-[#E7E9EA]/50 rounded-md shadow-sm min-w-[600px]' key={index}>
+                                <div className='bg-[#E7E9EA]/50 rounded-md shadow-sm w-full' key={index}>
                                     <div className='bg-white rounded-t-md rounded-b-sm px-4 py-3 border-x border-t 
                                     border-x-gray-300/40 border-t-gray-300/20 relative'>
                                         <h2 className="font-bold text-xl text-gray-800 leading-tight mb-3">{plan}</h2>

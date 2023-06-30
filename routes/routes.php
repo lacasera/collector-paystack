@@ -7,7 +7,6 @@ Route::group([
     'prefix' => 'collector',
 ],
     function () {
-
         Route::group([
             //'middleware' => array_merge(config('collector.middleware', ['web', 'auth'])),
             'prefix' => config('collector.path'),

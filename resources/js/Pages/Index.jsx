@@ -7,6 +7,7 @@ import IconAmExp from '../Components/Icon/IconAmExp';
 import IconMasterCard from '../Components/Icon/IconMasterCard';
 import IconCheckmark from '../Components/Icon/IconCheckmark';
 import IconViewMore from '../Components/Icon/IconViewMore';
+import IconClose from '../Components/Icon/IconClose';
 import CancelSubscription from '../Components/Modal/CancelSubscription';
 
 export default function Index() {
@@ -21,7 +22,7 @@ const [confirmCancelSubscription, setConfirmCancelSubscription] = React.useState
         <Layout onViewReceipt={handleViewReceipt}>
             <Head title="Dashboard" />
 
-            <div className='max-w-5xl mx-auto flex flex-col items-center px-5'>
+            <div className='w-full sm:max-w-5xl mx-auto flex flex-col items-center px-5'>
                 <div className=''>
                     <div className="mb-8 text-center">
                         <span className='rounded-full bg-[#CACED0]/60 w-[80px] h-[80px] 
@@ -37,7 +38,7 @@ const [confirmCancelSubscription, setConfirmCancelSubscription] = React.useState
                     </div>
 
                     <div className='flex flex-col space-y-8'>
-                        <div className='bg-[#E7E9EA]/50 rounded-md shadow-sm min-w-[600px]'>
+                        <div className='bg-[#E7E9EA]/50 rounded-md shadow-sm w-full sm:min-w-[600px]'>
                             <div className='bg-white rounded-t-md rounded-b-sm px-4 py-3 border-x border-t 
                             border-x-gray-300/40 border-t-gray-300/20'>
                                 <h2 className="font-bold text-xl text-gray-800 leading-tight mb-3">Hobby</h2>
@@ -67,30 +68,34 @@ const [confirmCancelSubscription, setConfirmCancelSubscription] = React.useState
                                     </ul>
                                 </div>
                             </div>
-                            <div className='px-4 py-3 flex flex-row justify-between border-x border-b border-t 
-                            border-gray-300 border-t-gray-300/20 border-x-gray-300/40 rounded-b-md'>
+
+                            {/* flex-wrap sm: */}
+
+                            <div className='w-full px-4 py-3 flex flex-row justify-between border-x border-b border-t 
+                            border-gray-300 border-t-gray-300/20 border-x-gray-300/40 rounded-b-md items-center'>
                                 <PrimaryButton>Change Subscription Plan</PrimaryButton>
                                 
                                 <button 
                                     type='button'
                                     onClick={() => setConfirmCancelSubscription(true)}
-                                    className='inline-flex items-center px-4 py-2 bg-transparent border border-red-500 
-                                rounded-md font-semibold text-xs text-red-600 uppercase tracking-widest hover:bg-red-500/40
-                                focus:bg-red-500/40 active:bg-red-900/40 focus:outline-none focus:ring-2 focus:ring-red-500 
-                                focus:ring-offset-2 transition ease-in-out duration-150'>
-                                    CANCEL
+                                    className='inline-flex items-center justify-center w-7 h-7 sm:w-fit sm:h-full sm:px-4 sm:py-2 bg-transparent border-[1.8px] border-red-500 
+                                    rounded-full sm:rounded-md font-semibold text-xs text-red-600 uppercase tracking-widest hover:bg-red-500/40
+                                    focus:bg-red-500/40 active:bg-red-900/40 focus:outline-none focus:ring-2 focus:ring-red-500 
+                                    focus:ring-offset-2 transition ease-in-out duration-150'>
+                                        <span className='hidden sm:block'>CANCEL</span>
+                                        <IconClose id="close" className="block sm:hidden w-[10px] h-[10px] text-red-500" />
                                 </button>
                             </div>
                         </div>
 
-                        <div className='min-w-[600px]'>
+                        <div className='w-full sm:min-w-[600px]'>
                             <h1 className="font-semibold text-[21px] text-gray-800 leading-tight mb-2">Payment Info</h1>
                             <div className='bg-white rounded-md shadow-sm'>
                                 <div className='bg-white rounded-t-md rounded-b-sm px-4 py-5 border-x border-t
-                                border-x-gray-300/40 border-t-gray-300/20 space-y-2'>
-                                    <div className='text-base text-gray-600 items-center inline-flex'>
-                                        Your current payment info is 
-                                        <span className='font-bold text-gray-800 inline-flex ml-2 items-center'>
+                                border-x-gray-300/40 border-t-gray-300/20 space-y-2 w-full'>
+                                    <div className='text-base text-gray-600 items-center sm:inline-flex'>
+                                        Your current payment info is: 
+                                        <span className='mt-1 sm:mt-0 font-bold text-gray-800 inline-flex sm:ml-2 items-center'>
                                             <span className='w-[32px] h-[22px] border flex items-center justify-center rounded-sm mr-2'>
                                                 {/* <IconMasterCard className="w-8 h-6"/> */}
                                                 {/* <IconAmExp className="w-7 h-4"/> */}
@@ -128,7 +133,7 @@ const [confirmCancelSubscription, setConfirmCancelSubscription] = React.useState
                                 </div>
                             </div>
                             
-                            <div className='bg-white rounded-md shadow-sm min-w-[600px] px-4 py-0 border-x border-t
+                            <div className='bg-white rounded-md shadow-sm w-full sm:min-w-[600px] px-4 py-0 border-x border-t
                                 border-x-gray-300/40 border-t-gray-300/20 divide-y flex flex-col mb-2'> 
                                 {
                                     new Array(10).fill(null).map((_, index) => (
@@ -137,7 +142,9 @@ const [confirmCancelSubscription, setConfirmCancelSubscription] = React.useState
                                             Feb {10 + (10 - index)}th, 2023
                                             <IconViewMore className="w-[13px] h-[13px] inline-flex fill-current ml-2"/>
                                         </div>
-                                        <div className='text-gray-800'>Paystack</div>
+
+                                        <div className='text-gray-800 hidden sm:inline-flex'>Paystack</div>
+                                        
                                         <div>
                                             {
                                                index < 8 ? (
@@ -151,13 +158,15 @@ const [confirmCancelSubscription, setConfirmCancelSubscription] = React.useState
                                                )
                                             }
                                         </div>
-                                        <div className='text-gray-800 inline-flex'>
+                                        
+                                        <div className='text-gray-800 hidden sm:inline-flex'>
                                             <span className='inline-flex items-center'>
                                                 <span className='w-[32px] h-[22px] border flex items-center justify-center rounded-sm mr-2'>
                                                     <IconVisa className="w-6 h-6"/>
                                                 </span> <span className="text-[12px] mr-1">•••• •••• ••••</span> 5964
                                             </span>
                                         </div>
+
                                         <div className='text-gray-800'>$27</div>
                                     </div>
                                     ))
