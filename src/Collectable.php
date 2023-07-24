@@ -2,11 +2,17 @@
 
 namespace Collector;
 
+use Collector\PayStack\ManagesCustomer;
 use Collector\PayStack\ManagesPlans;
+use Collector\PayStack\ManagesSubscription;
 
 trait Collectable
 {
     use PayStack;
+    use ManagesPlans;
+    use ManagesCustomer;
+    use ManagesSubscription;
+
 
     public static function bootCollectable()
     {

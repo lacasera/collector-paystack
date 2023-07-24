@@ -3,6 +3,8 @@
 namespace Collector;
 
 use App\Models\User;
+use Collector\Actions\CreateSubscriptions;
+use Collector\Concerns\CreateSubscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
 
@@ -13,6 +15,7 @@ class CollectorServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        $this->app->singleton(CreateSubscription::class, CreateSubscriptions::class);
         /*
          * Optional methods to load your package assets
          */
@@ -35,6 +38,7 @@ class CollectorServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__.'/../resources/assets' => public_path('vendor/collector'),
             ], 'assets');
+
 
             // Publishing the translation files.
             /*$this->publishes([

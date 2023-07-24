@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 trait ManagesCustomer
 {
-    public function createOrGetPayStackCustomer(array $options)
+    public function createOrGetPayStackCustomer()
     {
-      dd("here");
+     // dd($options);
 
  //        if (! array_key_exists('name', $options) && $name = $this->paystackFirstName()) {
 //            $options['name'] = $name;
@@ -21,22 +21,22 @@ trait ManagesCustomer
 //        if (! array_key_exists('phone', $options) && $phone = $this->paystackPhone()) {
 //            $options['phone'] = $phone;
 //        }
-//
-//        $customer = $this->request
-//            ->post('/customer', [
-//                'first_name' => $collectable->first_name,
-//                'last_name' => $collectable->last_name,
-//                'phone' => $collectable->phone_number
-//            ])
-//            ->json('data');
-//
-//        if ($customer) {
-//            $collectable->fill([
-//                'paystack_id' => $customer['customer_code']
-//            ])->save();
-//        }
 
-        return '';
+        if ($this->hasPayStackId()) {
+            return $this;
+        }
+
+        $customer = $this->request
+            ->post('/customer', [
+                'email' => $this->email
+            ])
+            ->json('data');
+
+        if ($customer) {
+            $this->fill(['paystack_id' => $customer['customer_code']])->save();
+        }
+
+        return $this;
     }
 
     public function hasPayStackId()

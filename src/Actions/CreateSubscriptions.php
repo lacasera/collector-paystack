@@ -9,7 +9,7 @@ use Collector\Plan;
 
 class CreateSubscriptions implements CreateSubscription
 {
-    public function create(Collectable $collectable, $plan, $options = [])
+    public function create($collectable, $plan, $options = [])
     {
         $type = $collectable->collectorConfiguration('type');
 
@@ -19,9 +19,14 @@ class CreateSubscriptions implements CreateSubscription
         $this->cancelExistingSubscriptions($collectable);
 
         $subscriptionBuilder = $collectable->newSubscription($paystackPlan);
+
+        $customer = $collectable->createOrGetPayStackCustomer([
+            'email' => $collectable->email
+        ]);
+
     }
 
-    protected function cancelExistingSubscriptions(Collectable $collectable)
+    protected function cancelExistingSubscriptions($collectable)
     {
 
     }

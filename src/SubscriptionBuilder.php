@@ -38,15 +38,8 @@ class SubscriptionBuilder
         return $this;
     }
 
-    public function checkout()
+    public function checkout(array $options)
     {
-
-    }
-
-    protected function getPayStackCustomer(array $options = [])
-    {
-        $customer = $this->owner->createOrGetPayStackCustomer($options);
-
-        return $customer;
+        return [];
     }
 }

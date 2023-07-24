@@ -2,7 +2,9 @@ import PrimaryButton from "./Button/PrimaryButton";
 import Feature from "./Feature";
 
 const  subscribeToPlan = async (planId) => {
-    const response = await axios.post("/collector/subscription/", JSON.stringify({plan: planId}))
+    const response = await axios.post(`/collector/subscription`, {
+        plan: planId
+    })
     console.log(response.data)
 }
 

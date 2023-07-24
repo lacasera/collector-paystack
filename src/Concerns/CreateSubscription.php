@@ -2,15 +2,14 @@
 
 namespace Collector\Concerns;
 
-use Collector\Collectable;
 
 interface CreateSubscription
 {
     /**
-     * @param Collectable $collectable
+     * @param $collectable
      * @param $plan
-     * @param $options
+     * @param array $options
      * @return mixed
      */
-    public function create(Collectable $collectable, $plan, $options = []);
+    public function create($collectable, $plan,  $options = []);
 }
