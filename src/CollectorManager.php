@@ -30,7 +30,6 @@ class CollectorManager
         $this->collectableResolvingCallbacks[$type] = $callback;
     }
 
-
     public function resolveCollectable($type, Request $request)
     {
         if (isset($this->collectableResolvingCallbacks[$type])) {
@@ -42,7 +41,6 @@ class CollectorManager
     {
         return config("collector.collectables.$collectableType.model");
     }
-
 
     public function isAuthorizedToViewBillingPortal($billable, Request $request)
     {

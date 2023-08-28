@@ -19,7 +19,8 @@
         "php": "^8.0",
         "inertiajs/inertia-laravel": "^0.6.9",
         "moneyphp/money": "^4.1",
-        "unicodeveloper/laravel-paystack": "^1.1"
+        "unicodeveloper/laravel-paystack": "^1.1",
+        "ext-intl": "*"
     },
     "require-dev": {
         "laravel/pint": "^1.10",

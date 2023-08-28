@@ -1,0 +1,196 @@
+<?php
+
+namespace Collector\Models;
+
+use Carbon\Carbon;
+use Collector\Events\SubscriptionCanceled;
+use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class Subscription extends Model
+{
+    public const ACTVIE_STATUS = 'active';
+
+    public const TRIALING_STATUS = 'trialing';
+
+    public const CANCELLED_STATUS = 'cancelled';
+
+    public static string $subscriptionModel = Subscription::class;
+
+    public static string $customerModel = 'App\\Models\\User';
+
+    /**
+     * The attributes that are not mass assignable.
+     *
+     * @var array
+     */
+    protected $guarded = ['id'];
+
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'ends_at' => 'datetime',
+        'quantity' => 'integer',
+        'trial_ends_at' => 'datetime',
+    ];
+
+    /**
+     * Get the user that owns the subscription.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->owner();
+    }
+
+    /**
+     * Get the model related to the subscription.
+     */
+    public function owner(): BelongsTo
+    {
+        $model = self::$customerModel;
+
+        return $this->belongsTo($model, (new $model)->getForeignKey());
+    }
+
+    /**
+     * Set the customer model class name.
+     *
+     * @param  string  $customerModel
+     * @return void
+     */
+    public static function useCustomerModel($customerModel)
+    {
+        static::$customerModel = $customerModel;
+    }
+
+    /**
+     * Set the subscription model class name.
+     *
+     * @param  string  $subscriptionModel
+     * @return void
+     */
+    public static function useSubscriptionModel($subscriptionModel)
+    {
+        static::$subscriptionModel = $subscriptionModel;
+    }
+
+    public function isActive()
+    {
+        return $this->status === self::ACTVIE_STATUS;
+    }
+
+    /**
+     * Determine if the subscription is active, on trial, or within its grace period.
+     *
+     * @return bool
+     */
+    public function valid()
+    {
+        return $this->isActive() || $this->onTrial() || $this->onGracePeriod();
+    }
+
+    /**
+     * Determine if the subscription is within its trial period.
+     *
+     * @return bool
+     */
+    public function onTrial()
+    {
+        return $this->trial_ends_at && $this->trial_ends_at->isFuture();
+    }
+
+    /**
+     * Determine if the subscription's trial has expired.
+     *
+     * @return bool
+     */
+    public function hasExpiredTrial()
+    {
+        return $this->trial_ends_at && $this->trial_ends_at->isPast();
+    }
+
+    /**
+     * Filter query by expired trial.
+     *
+     * @return void
+     */
+    public function scopeExpiredTrial(Builder $query)
+    {
+        $query->whereNotNull('trial_ends_at')->where('trial_ends_at', '<', Carbon::now());
+    }
+
+    /**
+     * Filter query by not on trial.
+     *
+     * @return void
+     */
+    public function scopeNotOnTrial(Builder $query)
+    {
+        $query->whereNull('trial_ends_at')->orWhere('trial_ends_at', '<=', Carbon::now());
+    }
+
+    /**
+     * Determine if the subscription is within its grace period after cancelation.
+     *
+     * @return bool
+     */
+    public function onGracePeriod()
+    {
+        return $this->ends_at && $this->ends_at->isFuture();
+    }
+
+    /**
+     * Filter query by on grace period.
+     *
+     * @return void
+     */
+    public function scopeOnGracePeriod(Builder $query)
+    {
+        $query->whereNotNull('ends_at')->where('ends_at', '>', Carbon::now());
+    }
+
+    /**
+     * Filter query by not on grace period.
+     *
+     * @return void
+     */
+    public function scopeNotOnGracePeriod(Builder $query)
+    {
+        $query->whereNull('ends_at')->orWhere('ends_at', '<=', Carbon::now());
+    }
+
+    /**
+     * @return void
+     */
+    public function markAsCanceled()
+    {
+        $this->fill([
+            'paystack_status' => self::CANCELLED_STATUS,
+            'ends_at' => Carbon::now(),
+        ])->save();
+    }
+
+    /**
+     * @return bool
+     */
+    public function cancel(string $reason)
+    {
+        if ($this->owner->cancelOnPayStack($this)) {
+            $this->markAsCanceled();
+            SubscriptionCanceled::dispatch($this->owner, $this);
+
+            return $this->fill(['cancelation_reason' => $reason])->save();
+        }
+
+        return false;
+    }
+
+    public function swap()
+    {
+
+    }
+}

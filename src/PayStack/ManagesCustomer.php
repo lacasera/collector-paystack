@@ -2,35 +2,26 @@
 
 namespace Collector\PayStack;
 
-use Illuminate\Database\Eloquent\Model;
+use Exception;
 
 trait ManagesCustomer
 {
-    public function createOrGetPayStackCustomer()
+    public function createOrGetPayStackCustomer(array $options = [])
     {
-     // dd($options);
 
- //        if (! array_key_exists('name', $options) && $name = $this->paystackFirstName()) {
-//            $options['name'] = $name;
-//        }
-//
-//        if (! array_key_exists('email', $options) && $email = $this->paystackEmail()) {
-//            $options['email'] = $email;
-//        }
-//
-//        if (! array_key_exists('phone', $options) && $phone = $this->paystackPhone()) {
-//            $options['phone'] = $phone;
-//        }
+        if (! array_key_exists('email', $options) && $email = $this->payStackEmail()) {
+            $options['email'] = $email;
+        }
+
+        if (! array_key_exists('phone', $options) && $phone = $this->payStackPhone()) {
+            $options['phone'] = $phone;
+        }
 
         if ($this->hasPayStackId()) {
             return $this;
         }
 
-        $customer = $this->request
-            ->post('/customer', [
-                'email' => $this->email
-            ])
-            ->json('data');
+        $customer = $this->request->post('/customer', $options)->json('data');
 
         if ($customer) {
             $this->fill(['paystack_id' => $customer['customer_code']])->save();
@@ -39,13 +30,45 @@ trait ManagesCustomer
         return $this;
     }
 
+    /**
+     * @return array|null
+     */
+    public function getAsPaystackCustomer()
+    {
+        if (! $this->hasPayStackId()) {
+            throw new Exception('user is not a paystack customer');
+        }
+
+        $response = $this->request->get("customer/$this->paystack_id");
+
+        if (! $response->ok()) {
+            return null;
+        }
+
+        return $response->json('data');
+    }
+
+    /**
+     * @return bool
+     */
     public function hasPayStackId()
     {
         return ! is_null($this->paystack_id);
     }
 
-    protected function paystackFirstName()
+    /**
+     * @return mixed|null
+     */
+    protected function payStackEmail()
     {
+        return $this->email ?? null;
+    }
 
+    /**
+     * @return mixed|null
+     */
+    protected function payStackPhone()
+    {
+        return $this->phone ?? null;
     }
 }

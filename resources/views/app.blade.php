@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Laravel') }} Billing Portal</title>
 
     <!-- Fonts -->
     <link href="https://fonts.bunny.net/css?family=Nunito:400,600,700" rel="stylesheet">

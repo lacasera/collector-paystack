@@ -2,6 +2,7 @@
 
 namespace Collector\Http\Controllers;
 
+use Collector\Events\PaymentVerified;
 use Collector\FrontendState;
 use Collector\GuessCollectableTypes;
 use Collector\RetrieveCollectableModels;
@@ -19,10 +20,8 @@ class BillingPortalController
         $type = $type ?: $this->guessCollectableType();
 
         $collectable = $this->collectable($type, $id);
-
         Inertia::setRootView('collector::app');
 
-       // dd($collectable->createAsPayStackCustomer([]));
         View::share([
             'cssPath' => __DIR__.'/../../../public/css/app.css',
             'jsPath' => __DIR__.'/../../../public/js/app.js',
@@ -30,10 +29,15 @@ class BillingPortalController
 
         Inertia::share(app(FrontendState::class)->current($type, $collectable));
 
+        if ($request->has('reference')) {
+
+            PaymentVerified::dispatch($collectable, $request->get('reference'));
+        }
+
         // Index.jsx ----> Subscribed (or user with a Subscription)
         // Plans.jsx ----> when user is not subscribe (or user wants to change Subscription)
         return Inertia::render('Plans', [
-            'subscribe' => true
+            'subscribed' => $collectable->currentActivePlan()?->paystack_plan,
         ]);
     }
 }

@@ -32,6 +32,7 @@ class HandleInertiaRequests extends Middleware
             'collector' => [
                 'flash' => [
                     'success' => fn () => $request->session()->pull('collector.flash.success'),
+                    'error' => fn () => $request->session()->pull('collector.flash.error'),
                 ],
             ],
         ]);

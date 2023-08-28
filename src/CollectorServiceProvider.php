@@ -2,10 +2,11 @@
 
 namespace Collector;
 
-use App\Models\User;
 use Collector\Actions\CreateSubscriptions;
 use Collector\Concerns\CreateSubscription;
-use Illuminate\Http\Request;
+use Collector\Console\InstallCommand;
+use Collector\Events\PaymentVerified;
+use Collector\Listeners\SubscribeUserToPlan;
 use Illuminate\Support\ServiceProvider;
 
 class CollectorServiceProvider extends ServiceProvider
@@ -16,45 +17,45 @@ class CollectorServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->app->singleton(CreateSubscription::class, CreateSubscriptions::class);
-        /*
-         * Optional methods to load your package assets
-         */
+
         // $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'collector');
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'collector');
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         $this->loadRoutesFrom(__DIR__.'/../routes/routes.php');
 
+        $this->registerConfigs();
+        $this->registerCommand();
+        $this->configureListeners();
+    }
+
+    private function registerCommand()
+    {
+        if ($this->app->runningInConsole()) {
+            $this->commands([InstallCommand::class]);
+        }
+    }
+
+    private function registerConfigs()
+    {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'config/collector.php' => config_path('collector.php'),
-            ], 'config');
+                __DIR__.'/../config/collector.php' => config_path('collector.php'),
+            ], 'collector-config');
 
             // Publishing the views.
             $this->publishes([
                 __DIR__.'/../resources/views' => resource_path('views/vendor/collector'),
-            ], 'views');
+            ], 'collector-views');
 
             // Publishing assets.
             $this->publishes([
                 __DIR__.'/../resources/assets' => public_path('vendor/collector'),
-            ], 'assets');
-
+            ], 'collector-assets');
 
             // Publishing the translation files.
             /*$this->publishes([
                 __DIR__.'/../resources/lang' => resource_path('lang/vendor/collector'),
             ], 'lang');*/
-
-            // Registering package commands.
-            // $this->commands([]);
-
-          //  Collector::billable(User::class)->checkPlanEligibility(function (User $billable, Plan $plan) {
-                // if ($billable->projects > 5 && $plan->name == 'Basic') {
-                //     throw ValidationException::withMessages([
-                //         'plan' => 'You have too many projects for the selected plan.'
-                //     ]);
-                // }
-            //});
         }
     }
 
@@ -68,5 +69,10 @@ class CollectorServiceProvider extends ServiceProvider
 
         // Register the main class to use with the facade
         $this->app->singleton('collector.manager', CollectorManager::class);
+    }
+
+    public function configureListeners()
+    {
+        $this->app['events']->listen(PaymentVerified::class, SubscribeUserToPlan::class);
     }
 }

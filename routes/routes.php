@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use Collector\Http\Middleware\HandleInertiaRequests;
+use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'collector'], function () {
     Route::group([
@@ -16,5 +16,6 @@ Route::group(['prefix' => 'collector'], function () {
 Route::group(['namespace' => 'Collector\Http\Controllers', 'prefix' => 'collector'], function () {
     Route::group(['middleware' => array_merge(config('collector.middleware', ['web', 'auth']))], function () {
         Route::post('/subscription', 'NewSubscriptionController');
+        Route::post('/subscription/cancel', 'CancelSubscriptionController');
     });
 });

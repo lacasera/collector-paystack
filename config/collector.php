@@ -141,7 +141,7 @@ return [
                     'description' => 'This is a short, human friendly description of the plan.',
                     'monthly_id' => 'PLN_worid7k3e8v5afz',
                     'yearly_incentive' => 'Save 10%',
-                    'yearly_id' => "PLN_2y8oe4r1gx7gakr",
+                    'yearly_id' => 'PLN_2y8oe4r1gx7gakr',
                     'features' => [
                         'Feature 1',
                         'Feature 2',
@@ -149,7 +149,7 @@ return [
                     ],
                     'options' => [
 
-                    ]
+                    ],
                 ],
                 [
                     'name' => 'Standard',
@@ -188,5 +188,14 @@ return [
             ],
 
         ],
+    ],
+
+    /**
+     * This will be shown on the cancelation modal
+     */
+    'cancelation' => [
+        'heading' => 'Are you sure you want to cancel your subscription?',
+        'subText' => 'Once your subscription is cancelled, all of its resources and related data will be permanently deleted.',
+        'reasonLabel' => 'Please why you canceling',
     ],
 ];

@@ -9,13 +9,10 @@ use Money\Currency;
 use Money\Formatter\IntlMoneyFormatter;
 use Money\Money;
 use NumberFormatter;
-use Unicodeveloper\Paystack\Facades\Paystack;
 
 class FrontendState
 {
     /**
-     * @param $type
-     * @param Model $collectable
      * @return array
      */
     public function current($type, Model $collectable)
@@ -26,6 +23,7 @@ class FrontendState
             'collectable' => $collectable->toArray(),
             'monthlyPlans' => $plans->where('interval', 'monthly')->where('active', true)->values(),
             'yearlyPlans' => $plans->where('interval', 'yearly')->where('active', true)->values(),
+            'cancelation' => config('collector.cancelation'),
         ];
     }
 
@@ -37,7 +35,7 @@ class FrontendState
 
         return $plans->map(function ($plan) use ($prices) {
             if (! $paystackPrice = $prices->firstWhere('plan_code', $plan->id)) {
-                throw new \RuntimeException('Price ['.$plan->id.'] does not exist in your PayStack account.');
+                throw new \RuntimeException('Plan ['.$plan->id.'] does not exist in your PayStack account.');
             }
 
             $plan->rawPrice = $paystackPrice['amount'];

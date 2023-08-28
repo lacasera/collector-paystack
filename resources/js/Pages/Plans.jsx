@@ -1,28 +1,25 @@
 import React from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import Layout from '../Layouts/Layout';
 import Plan from "../Components/Plan";
+import Alert from "../Components/Alert";
 
-function displayPlans (plans){
-    return plans.map((plan, index) => <Plan key={index} plan={plan} />)
+function displayPlans (plans, currentPlan, cancelation){
+    return plans.map((plan, index) => <Plan key={index} plan={plan} currentPlan={currentPlan} cancelation={cancelation} />)
 }
 
 export default function Plans(props) {
-   const [frequency, setFrequency] = React.useState('monthly')
+    const [frequency, setFrequency] = React.useState('monthly')
+    const {collector} = usePage().props
 
+    console.log(collector)
    return (
         <Layout>
             <Head title="Plans" />
 
             <div className='max-w-5xl mx-auto flex flex-col items-center px-5'>
                 <div className='max-w-[600px]'>
-                    {/* <div className='alert mb-8'>
-                        <span className="bg-[#CACED0] border border-gray-400 py-2 px-4 w-full block 
-                        text-[15px] rounded-md mb-4 text-gray-700">
-                            Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt
-                            mollit anim id est laborum
-                        </span>
-                    </div> */}
+                    {collector.flash.success && <Alert alert="error" message={collector.flash.success} />}
 
                     <div className="mb-6 text-center">
                         <span className='rounded-full bg-[#CACED0]/60 w-[80px] h-[80px] 
@@ -64,7 +61,11 @@ export default function Plans(props) {
                     </div>
 
                     <div className='flex flex-col space-y-5'>
-                        {frequency === 'monthly' ? (displayPlans(props.monthlyPlans)) : (displayPlans(props.yearlyPlans))}
+                        {
+                            frequency === 'monthly'
+                                ? (displayPlans(props.monthlyPlans, props.subscribed, props.cancelation))
+                                : (displayPlans(props.yearlyPlans, props.subscribed, props.cancelation))
+                        }
                     </div>
                 </div> 
             </div>

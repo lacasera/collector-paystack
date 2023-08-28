@@ -2,17 +2,28 @@
 
 namespace Collector;
 
+use Collector\Models\Subscription;
 use Collector\PayStack\ManagesCustomer;
 use Collector\PayStack\ManagesPlans;
 use Collector\PayStack\ManagesSubscription;
+use Collector\PayStack\PrepareRequest;
+use Illuminate\Http\Client\PendingRequest;
 
 trait Collectable
 {
-    use PayStack;
-    use ManagesPlans;
-    use ManagesCustomer;
-    use ManagesSubscription;
+    protected PendingRequest $request;
 
+    use ManagesPlans;
+    use ManagesSubscription;
+    use ManagesCustomer;
+    use PayStack;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->request = PrepareRequest::prepare();
+    }
 
     public static function bootCollectable()
     {
@@ -24,28 +35,49 @@ trait Collectable
             ])->save();
         });
 
-//        static::updated(function ($customer) {
-//            if ($customer->hasPayStackId() && $customer->shouldSyncCustomerDetailsToPayStack()) {
-//                //
-//            }
-//        });
+        //        static::updated(function ($customer) {
+        //            if ($customer->hasPayStackId() && $customer->shouldSyncCustomerDetailsToPayStack()) {
+        //                //
+        //            }
+        //        });
     }
 
     public function collectorConfiguration($key = null)
     {
         $config = collect(config('collector.collectables'))
             ->map(function ($config, $type) {
-            $config['type'] = $type;
+                $config['type'] = $type;
 
-            return $config;
-        })->first(function ($billable, $type) {
-            return $billable['model'] == get_class($this);
-        });
+                return $config;
+            })->first(function ($billable, $type) {
+                return $billable['model'] == get_class($this);
+            });
 
         if ($key) {
             return $config[$key] ?? null;
         }
 
         return $config;
+    }
+
+    public function hasActivePlan(string $planId)
+    {
+        return Subscription::$subscriptionModel::where([
+                'paystack_plan' => $planId,
+                'paystack_status' => Subscription::ACTVIE_STATUS,
+                'user_id' => $this->id,
+            ])
+                ->first();
+    }
+
+    /**
+     * @return mixed
+     */
+    public function currentActivePlan()
+    {
+        return Subscription::$subscriptionModel::where([
+                'paystack_status' => Subscription::ACTVIE_STATUS,
+                'user_id' => $this->id,
+            ])->first();
     }
 }
