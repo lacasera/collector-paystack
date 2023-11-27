@@ -2,9 +2,12 @@
 
 namespace Collector;
 
-use Collector\Http\Livewire\BillingPortal;
+use Collector\Actions\CreateSubscriptions;
+use Collector\Concerns\CreateSubscription;
+use Collector\Console\InstallCommand;
+use Collector\Events\PaymentVerified;
+use Collector\Listeners\SubscribeUserToPlan;
 use Illuminate\Support\ServiceProvider;
-use Livewire\Livewire;
 
 class CollectorServiceProvider extends ServiceProvider
 {
@@ -13,38 +16,46 @@ class CollectorServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        /*
-         * Optional methods to load your package assets
-         */
+        $this->app->singleton(CreateSubscription::class, CreateSubscriptions::class);
+
         // $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'collector');
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'collector');
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         $this->loadRoutesFrom(__DIR__.'/../routes/routes.php');
 
-        // Livewire::component('billing', BillingPortal::class);
+        $this->registerConfigs();
+        $this->registerCommand();
+        $this->configureListeners();
+    }
 
+    private function registerCommand()
+    {
+        if ($this->app->runningInConsole()) {
+            $this->commands([InstallCommand::class]);
+        }
+    }
+
+    private function registerConfigs()
+    {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'config/collector.php' => config_path('collector.php'),
-            ], 'config');
+                __DIR__.'/../config/collector.php' => config_path('collector.php'),
+            ], 'collector-config');
 
             // Publishing the views.
             $this->publishes([
                 __DIR__.'/../resources/views' => resource_path('views/vendor/collector'),
-            ], 'views');
+            ], 'collector-views');
 
             // Publishing assets.
             $this->publishes([
                 __DIR__.'/../resources/assets' => public_path('vendor/collector'),
-            ], 'assets');
+            ], 'collector-assets');
 
             // Publishing the translation files.
             /*$this->publishes([
                 __DIR__.'/../resources/lang' => resource_path('lang/vendor/collector'),
             ], 'lang');*/
-
-            // Registering package commands.
-            // $this->commands([]);
         }
     }
 
@@ -57,5 +68,11 @@ class CollectorServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/collector.php', 'collector');
 
         // Register the main class to use with the facade
+        $this->app->singleton('collector.manager', CollectorManager::class);
+    }
+
+    public function configureListeners()
+    {
+        $this->app['events']->listen(PaymentVerified::class, SubscribeUserToPlan::class);
     }
 }

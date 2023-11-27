@@ -6,30 +6,40 @@ import TextInput from '../Input/TextInput';
 import InputLabel from '../Input/InputLabel';
 import InputError from '../Input/InputError';
 import { useForm } from '@inertiajs/react';
+import { useToasts } from 'react-toast-notifications'
 
-export default function CancelSubscription({show, onCloseModal}) {
-    const planInput = React.useRef();
-
+export default function CancelSubscription({show, onCloseModal, details, afterCancelSuccess}) {
+    const reasonInput = React.useRef();
+    const { addToast } = useToasts()
     const {
         data,
         setData,
         delete: destroy,
-        processing,
         reset,
         errors,
     } = useForm({
-        plan: '',
+        reason: '',
     });
 
-    const cancelSubscription = (e) => {
+    const [processing, setProcessing] = React.useState(false)
+    const  cancelSubscription = async (e) => {
         e.preventDefault();
-        console.log('cancelSubscription', data)
-        // destroy(route('profile.destroy'), {
-        //     preserveScroll: true,
-        //     onSuccess: () => closeModal(),
-        //     onError: () => plan.current.focus(),
-        //     onFinish: () => reset(),
-        // });
+
+        setProcessing(true)
+        const response = await axios.post('/collector/subscription/cancel', {
+            reason: data.reason
+        })
+
+        if (response.data) {
+            setProcessing(false);
+            closeModal();
+            addToast(  'Subscription canceled successfully.', {
+                appearance: 'success',
+                id: 'subscription-canceled',
+                autoDismiss: true,
+                onDismiss: id => location.reload()
+            })
+        }
     };
 
     const closeModal = () => {
@@ -41,33 +51,32 @@ export default function CancelSubscription({show, onCloseModal}) {
         <Modal show={show}>
             <div className="rounded-md bg-white w-[600px] mt-10">
                 <form onSubmit={cancelSubscription} className="p-6">
-                    <h2 className="font-semibold text-[21px] text-gray-800 leading-tight">
-                        Are you sure you want to cancel your subscription?
-                    </h2>
+                    <h2 className="font-semibold text-[21px] text-gray-800 leading-tight">{details.heading}</h2>
                     <p className="mt-1 text-gray-600">
-                        Once your subscription is cancelled, all of its resources and related data will be permanently deleted. Please
-                        enter your current plan name to confirm you would like to cancel subscription.
+                        {details.subText}
                     </p>
+
                     <div className="mt-6">
-                        <InputLabel htmlFor="password" value="Password" className="sr-only" />
+                        <InputLabel htmlFor="reason" value={details.reasonLabel}/>
+
                         <TextInput
-                            id="plan"
-                            name="plan"
-                            ref={planInput}
-                            value={data.plan}
-                            onChange={(e) => setData('plan', e.target.value)}
+                            id="reason"
+                            name="reason"
+                            ref={reasonInput}
+                            value={data.reason}
+                            onChange={(e) => setData('reason', e.target.value)}
                             className="mt-1 block w-3/4"
                             isFocused
-                            placeholder="Plan Name"
+                            placeholder="Service not meeting my expectation"
                         />
                         <InputError message={errors.plan} className="mt-2" />
                     </div>
                     <div className="mt-6 flex justify-end">
-                        <SecondaryButton onClick={closeModal}>
+                        <SecondaryButton onClick={closeModal} disabled={processing}>
                             Never Mind
                         </SecondaryButton>
-                        <DangerButton className="ml-3" disabled={processing}>
-                            Delete Account
+                        <DangerButton className="ml-3" disabled={processing || !data.reason}>
+                            {processing ? "Please Wait...." : "Delete Account"}
                         </DangerButton>
                     </div>
                 </form>
