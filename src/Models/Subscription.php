@@ -78,9 +78,9 @@ class Subscription extends Model
         static::$subscriptionModel = $subscriptionModel;
     }
 
-    public function isActive()
+    public function isActive(): bool
     {
-        return $this->status === self::ACTVIE_STATUS;
+        return $this->status === self::ACTVIE_STATUS || ($this->ends_at && $this->ends_at->isFuture());
     }
 
     /**
@@ -170,7 +170,7 @@ class Subscription extends Model
     {
         $this->fill([
             'paystack_status' => self::CANCELLED_STATUS,
-            'ends_at' => Carbon::now(),
+            'ends_at' => $this->getEndingDate(),
         ])->save();
     }
 
@@ -192,5 +192,16 @@ class Subscription extends Model
     public function swap()
     {
 
+    }
+
+    private function getEndingDate(): Carbon
+    {
+        $subscription = $this->owner->fetchSubscription($this->paystack_id);
+
+        if (! $subscription) {
+            return now();
+        }
+
+        return Carbon::parse(data_get($subscription, 'most_recent_invoice.period_end'));
     }
 }

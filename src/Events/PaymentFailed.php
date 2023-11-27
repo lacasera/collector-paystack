@@ -6,17 +6,20 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class WebhookHandled
+class PaymentFailed
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public array $payload;
+    public $collectable;
+
+    public $payload;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(array $payload)
+    public function __construct($collectable, $payload)
     {
+        $this->collectable = $collectable;
         $this->payload = $payload;
     }
 }

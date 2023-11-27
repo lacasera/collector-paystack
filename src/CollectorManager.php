@@ -14,6 +14,13 @@ class CollectorManager
 
     public $plans = [];
 
+    /**
+     * The default customer model class name.
+     *
+     * @var string
+     */
+    protected static $customerModel = 'App\\Models\\User';
+
     public function collectable(string $class)
     {
         foreach (config('collector.collectables') as $type => $config) {
@@ -40,6 +47,25 @@ class CollectorManager
     public function collectableModel($collectableType)
     {
         return config("collector.collectables.$collectableType.model");
+    }
+
+    /**
+     * @return mixed
+     */
+    public static function findCollectable(string $paystackId)
+    {
+        return (new static::$customerModel)->where('paystack_id', $paystackId)->first();
+    }
+
+    /**
+     * Set the customer model class name.
+     *
+     * @param  string  $customerModel
+     * @return void
+     */
+    public static function useCustomerModel($customerModel)
+    {
+        static::$customerModel = $customerModel;
     }
 
     public function isAuthorizedToViewBillingPortal($billable, Request $request)

@@ -19,6 +19,8 @@ return [
 
     'path' => 'billing',
 
+    'secret' => env('PAYSTACK_SECRET_KEY'),
+
     /*
     |--------------------------------------------------------------------------
     | Collector Middleware

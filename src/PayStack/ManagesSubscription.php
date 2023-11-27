@@ -88,7 +88,8 @@ trait ManagesSubscription
      */
     public function subscriptions()
     {
-        return $this->hasMany(Subscription::$subscriptionModel, $this->getForeignKey())->orderBy('created_at', 'desc');
+        return $this->hasMany(Subscription::$subscriptionModel, $this->getForeignKey())
+            ->orderBy('created_at', 'desc');
     }
 
     /**

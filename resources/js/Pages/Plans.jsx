@@ -2,7 +2,6 @@ import React from 'react';
 import { Head, usePage } from '@inertiajs/react';
 import Layout from '../Layouts/Layout';
 import Plan from "../Components/Plan";
-import Alert from "../Components/Alert";
 
 function displayPlans (plans, currentPlan, cancelation){
     return plans.map((plan, index) => <Plan key={index} plan={plan} currentPlan={currentPlan} cancelation={cancelation} />)
@@ -11,15 +10,11 @@ function displayPlans (plans, currentPlan, cancelation){
 export default function Plans(props) {
     const [frequency, setFrequency] = React.useState('monthly')
     const {collector} = usePage().props
-
-    console.log(collector)
    return (
         <Layout>
             <Head title="Plans" />
-
             <div className='max-w-5xl mx-auto flex flex-col items-center px-5'>
                 <div className='max-w-[600px]'>
-                    {collector.flash.success && <Alert alert="error" message={collector.flash.success} />}
 
                     <div className="mb-6 text-center">
                         <span className='rounded-full bg-[#CACED0]/60 w-[80px] h-[80px] 

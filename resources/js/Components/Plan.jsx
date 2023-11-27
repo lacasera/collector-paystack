@@ -3,6 +3,8 @@ import PrimaryButton from "./Button/PrimaryButton";
 import Feature from "./Feature";
 import DangerButton from "./Button/DangerButton";
 import CancelSubscription from "./Modal/CancelSubscription";
+import SecondaryButton from "./Button/SecondaryButton";
+import TealButton from "./Button/TealButton";
 
 const  subscribeToPlan = async (planId) => {
     const response = await axios.post(`/collector/subscription`, {
@@ -17,8 +19,11 @@ const  subscribeToPlan = async (planId) => {
 
 export default function Plan(props) {
     const [showCancelModel, setShowCancelModel] = useState(false)
-
     const {plan, currentPlan} = props;
+
+    const hasPlan = () => plan.id === currentPlan;
+
+    console.log(plan)
     return (
         <>
             <CancelSubscription
@@ -36,10 +41,11 @@ export default function Plan(props) {
                     {plan.incentive[plan.interval] && (
                             <span className='absolute top-0 right-0 rounded-bl-md rounded-tr-md text-sm
                                 bg-[#CACED0]/50 px-2 py-1 text-gray-600'>
-                                    Save 10%
+                                   {plan.incentive[plan.interval]}
                             </span>
                         )
                     }
+
                     <div className='text-base text-gray-600'>
                         <p className='mb-2'>{plan.description}</p>
                         <ul className='space-y-1 flex flex-col'>
@@ -49,11 +55,10 @@ export default function Plan(props) {
                 </div>
                 <div className='px-4 py-3 flex flex-row justify-end border-x border-b border-t
                      border-gray-300 border-t-gray-300/20 border-x-gray-300/40 rounded-b-md h-[60px]'>
-
-                    {currentPlan === plan.id ?
-                        <DangerButton className='w-full' onClick={() => setShowCancelModel(true)}>
-                            (Current Subscribed) Cancel
-                        </DangerButton>
+                    {hasPlan() ?
+                            <TealButton onClick={() => setShowCancelModel(true)}>
+                                (Current Plan) Cancel
+                            </TealButton>
                         :
                         <PrimaryButton onClick={() => subscribeToPlan(plan.id)}>
                             Subscribe

@@ -12,13 +12,10 @@ class PrepareRequest
      */
     protected static $baseUrl = 'https://api.paystack.co';
 
-    /**
-     * @return PendingRequest
-     */
     public static function prepare(): PendingRequest
     {
         return Http::asJson()
-            ->withToken(env('PAYSTACK_SECRET_KEY'))
+            ->withToken(config('collector.secret'))
             ->baseUrl(static::$baseUrl);
     }
 }

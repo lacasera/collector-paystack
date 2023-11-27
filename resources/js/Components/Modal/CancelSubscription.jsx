@@ -6,10 +6,11 @@ import TextInput from '../Input/TextInput';
 import InputLabel from '../Input/InputLabel';
 import InputError from '../Input/InputError';
 import { useForm } from '@inertiajs/react';
+import { useToasts } from 'react-toast-notifications'
 
-export default function CancelSubscription({show, onCloseModal, details}) {
+export default function CancelSubscription({show, onCloseModal, details, afterCancelSuccess}) {
     const reasonInput = React.useRef();
-
+    const { addToast } = useToasts()
     const {
         data,
         setData,
@@ -32,6 +33,12 @@ export default function CancelSubscription({show, onCloseModal, details}) {
         if (response.data) {
             setProcessing(false);
             closeModal();
+            addToast(  'Subscription canceled successfully.', {
+                appearance: 'success',
+                id: 'subscription-canceled',
+                autoDismiss: true,
+                onDismiss: id => location.reload()
+            })
         }
     };
 

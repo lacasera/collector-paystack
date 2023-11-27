@@ -18,4 +18,6 @@ Route::group(['namespace' => 'Collector\Http\Controllers', 'prefix' => 'collecto
         Route::post('/subscription', 'NewSubscriptionController');
         Route::post('/subscription/cancel', 'CancelSubscriptionController');
     });
+
+    Route::post('webhooks', 'CollectorWebhookController');
 });

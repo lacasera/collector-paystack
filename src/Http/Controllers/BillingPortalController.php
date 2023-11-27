@@ -30,7 +30,6 @@ class BillingPortalController
         Inertia::share(app(FrontendState::class)->current($type, $collectable));
 
         if ($request->has('reference')) {
-
             PaymentVerified::dispatch($collectable, $request->get('reference'));
         }
 

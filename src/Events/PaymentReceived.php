@@ -12,14 +12,14 @@ class PaymentReceived
 
     public $collectable;
 
-    public $reference;
+    public $payload;
 
     /**
      * Create a new event instance.
      */
-    public function __construct($collectable, $reference)
+    public function __construct($collectable, $payload)
     {
         $this->collectable = $collectable;
-        $this->reference = $reference;
+        $this->payload = $payload;
     }
 }

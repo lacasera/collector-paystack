@@ -28,8 +28,6 @@ class CancelSubscriptionController
 
         $subscription->cancel($request->get('reason'));
 
-        session(['spark.flash.success' => 'Your subscription has been successfully cancelled.']);
-
         return response()->json(['data' => 'Your subscription has been successfully cancelled.']);
     }
 }

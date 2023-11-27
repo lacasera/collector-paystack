@@ -13,9 +13,9 @@ trait Collectable
 {
     protected PendingRequest $request;
 
+    use ManagesCustomer;
     use ManagesPlans;
     use ManagesSubscription;
-    use ManagesCustomer;
     use PayStack;
 
     public function __construct()
@@ -63,11 +63,10 @@ trait Collectable
     public function hasActivePlan(string $planId)
     {
         return Subscription::$subscriptionModel::where([
-                'paystack_plan' => $planId,
-                'paystack_status' => Subscription::ACTVIE_STATUS,
-                'user_id' => $this->id,
-            ])
-                ->first();
+            'paystack_plan' => $planId,
+            'paystack_status' => Subscription::ACTVIE_STATUS,
+            'user_id' => $this->id,
+        ])->first();
     }
 
     /**
@@ -76,8 +75,8 @@ trait Collectable
     public function currentActivePlan()
     {
         return Subscription::$subscriptionModel::where([
-                'paystack_status' => Subscription::ACTVIE_STATUS,
-                'user_id' => $this->id,
-            ])->first();
+            'paystack_status' => Subscription::ACTVIE_STATUS,
+            'user_id' => $this->id,
+        ])->first();
     }
 }
