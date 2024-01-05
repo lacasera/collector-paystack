@@ -64,7 +64,7 @@ trait Collectable
     {
         return Subscription::$subscriptionModel::where([
             'paystack_plan' => $planId,
-            'paystack_status' => Subscription::ACTVIE_STATUS,
+            'paystack_status' => Subscription::ACTIVE_STATUS,
             'user_id' => $this->id,
         ])->first();
     }
@@ -75,7 +75,7 @@ trait Collectable
     public function currentActivePlan()
     {
         return Subscription::$subscriptionModel::where([
-            'paystack_status' => Subscription::ACTVIE_STATUS,
+            'paystack_status' => Subscription::ACTIVE_STATUS,
             'user_id' => $this->id,
         ])->first();
     }

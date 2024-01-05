@@ -17,6 +17,7 @@ Route::group(['namespace' => 'Collector\Http\Controllers', 'prefix' => 'collecto
     Route::group(['middleware' => array_merge(config('collector.middleware', ['web', 'auth']))], function () {
         Route::post('/subscription', 'NewSubscriptionController');
         Route::post('/subscription/cancel', 'CancelSubscriptionController');
+        Route::post('/subscription/change', 'ChangeSubscriptionController');
     });
 
     Route::post('webhooks', 'CollectorWebhookController');

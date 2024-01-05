@@ -2,6 +2,7 @@ import React from 'react';
 import { Head, usePage } from '@inertiajs/react';
 import Layout from '../Layouts/Layout';
 import Plan from "../Components/Plan";
+import Header from "../Components/Header";
 
 function displayPlans (plans, currentPlan, cancelation){
     return plans.map((plan, index) => <Plan key={index} plan={plan} currentPlan={currentPlan} cancelation={cancelation} />)
@@ -9,28 +10,12 @@ function displayPlans (plans, currentPlan, cancelation){
 
 export default function Plans(props) {
     const [frequency, setFrequency] = React.useState('monthly')
-    const {collector} = usePage().props
    return (
         <Layout>
             <Head title="Plans" />
             <div className='max-w-5xl mx-auto flex flex-col items-center px-5'>
                 <div className='max-w-[600px]'>
-
-                    <div className="mb-6 text-center">
-                        <span className='rounded-full bg-[#CACED0]/60 w-[80px] h-[80px] 
-                        inline-flex justify-center items-center text-3xl font-medium mb-4'>
-                            {props.collectable?.email?.charAt(0).toUpperCase()}
-                        </span>
-                        
-                        <p className="text-gray-800 leading-tight mb-4">
-                            {props.collectable?.email}
-                        </p>
-
-                        <p className="w-full block text-lg text-gray-900">
-                            You may choose one of the subscription plans below to get started.
-                        </p>
-                    </div>
-
+                    <Header email={props.collectable?.email} subtext="You may choose one of the subscription plans below to get started."/>
                     <div className='text-center'>
                         <div className='flex flex-row items-center justify-center space-x-2 mb-3'>
                             <span className="text-sm font-bold text-gray-900 uppercase">Monthly</span>
@@ -62,8 +47,21 @@ export default function Plans(props) {
                                 : (displayPlans(props.yearlyPlans, props.subscribed, props.cancelation))
                         }
                     </div>
-                </div> 
+                </div>
+                {props.subscribed &&
+                <div className="px-6 sm:px-0">
+                    <button className="flex items-center mt-4" onClick={() =>   window.location.href = `${props.portalUrl}`}>
+                        <svg viewBox="0 0 20 20" fill="currentColor" className="text-gray-400 w-4 h-4">
+                            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                        <div className="ml-2 text-sm text-gray-600 underline">
+                            Nevermind, I'll keep my old plan
+                        </div>
+                    </button>
+                </div>
+                }
             </div>
+
         </Layout>
    )
 }

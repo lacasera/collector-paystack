@@ -10,14 +10,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Subscription extends Model
 {
-    public const ACTVIE_STATUS = 'active';
+    public const ACTIVE_STATUS = 'active';
 
     public const TRIALING_STATUS = 'trialing';
 
     public const CANCELLED_STATUS = 'cancelled';
 
+    /**
+     * @var string
+     */
     public static string $subscriptionModel = Subscription::class;
 
+    /**
+     * @var string
+     */
     public static string $customerModel = 'App\\Models\\User';
 
     /**
@@ -80,7 +86,7 @@ class Subscription extends Model
 
     public function isActive(): bool
     {
-        return $this->status === self::ACTVIE_STATUS || ($this->ends_at && $this->ends_at->isFuture());
+        return $this->status === self::ACTIVE_STATUS || ($this->ends_at && $this->ends_at->isFuture());
     }
 
     /**
@@ -166,11 +172,11 @@ class Subscription extends Model
     /**
      * @return void
      */
-    public function markAsCanceled()
+    public function markAsCanceled($cancelAt = null)
     {
         $this->fill([
             'paystack_status' => self::CANCELLED_STATUS,
-            'ends_at' => $this->getEndingDate(),
+            'ends_at' => $cancelAt ?? $this->getEndingDate(),
         ])->save();
     }
 
@@ -185,6 +191,16 @@ class Subscription extends Model
 
             return $this->fill(['cancelation_reason' => $reason])->save();
         }
+        return false;
+    }
+
+    public function cancelNow()
+    {
+        if($this->owner->cancelOnPayStack($this)) {
+            $this->markAsCanceled(now());
+
+            return true;
+        }
 
         return false;
     }
@@ -194,6 +210,23 @@ class Subscription extends Model
 
     }
 
+    /**
+     * @return Carbon
+     */
+    public function getNextBillingDate(): Carbon
+    {
+        $subscription = $this->owner->fetchSubscription($this->paystack_id);
+
+        if (!$subscription) {
+            return now();
+        }
+
+        return Carbon::parse(data_get($subscription, 'next_payment_date'));
+    }
+
+    /**
+     * @return Carbon
+     */
     private function getEndingDate(): Carbon
     {
         $subscription = $this->owner->fetchSubscription($this->paystack_id);

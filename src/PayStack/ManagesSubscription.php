@@ -2,9 +2,11 @@
 
 namespace Collector\PayStack;
 
+use Carbon\Carbon;
 use Collector\Models\Subscription;
 use Collector\Plan;
 use Collector\SubscriptionBuilder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 trait ManagesSubscription
 {
@@ -27,8 +29,6 @@ trait ManagesSubscription
      */
     public function newSubscription(Plan $plan, $prices = [])
     {
-        //$customer = $this->getPayStackCustomer();
-
         return new SubscriptionBuilder($this, $plan->name, $prices);
     }
 
@@ -49,6 +49,68 @@ trait ManagesSubscription
         }
 
         return data_get($response->json('data'), 'authorization_url');
+    }
+
+    /**
+     * @return array|mixed
+     */
+    public function transctionHistroy()
+    {
+        if (!$this->hasPayStackId()) {
+            return [];
+        }
+
+        $results = collect([]);
+
+        $page = 1;
+        $transactions = $this->fetchTransactions();
+        $pageCount = (int) data_get($transactions, 'meta.pageCount');
+        $results = $results->merge(data_get($transactions, 'data'));
+
+        while ($page < $pageCount) {
+            $page = $page + 1;
+            $transactions = $this->fetchTransactions($page);
+            $results = $results->merge(data_get($transactions, 'data') ?? []);
+        }
+
+        return $results
+            ->map(function ($transaction) {
+                $amount = $transaction['amount'] / 100;
+                return [
+                    'price' => $amount,
+                    'formatted_price' => $transaction['currency'] . $amount,
+                    'currency' => $transaction['currency'],
+                    'created_at' => Carbon::parse($transaction['created_at'])->format('jS F, Y'),
+                    'status' => $transaction['status'] === 'success' ? 'Paid' : 'Overdue',
+                    'payment' => [
+                        'channel' => data_get($transaction, 'authorization.channel'),
+                        'country_code' => data_get($transaction, 'authorization.country_code'),
+                        'brand' => data_get($transaction, 'authorization.brand'),
+                        'card_type' => data_get($transaction, 'authorization.card_type'),
+                        'exp_month' => data_get($transaction, 'authorization.exp_month'),
+                        'exp_year' => data_get($transaction, 'authorization.exp_year'),
+                        'last4' => data_get($transaction, 'authorization.last4'),
+                    ]
+                ];
+            });
+    }
+
+    private function fetchTransactions($page = 1)
+    {
+        $response = $this->request->get('/transaction', [
+            'customer_id' => $this->paystack_id,
+            'from' => Carbon::parse()->startOfYear()->toDateTimeString(),
+            'to' => Carbon::parse()->endOfYear()->toDateTimeString(),
+            'status' => 'success',
+            'perPage' => 50,
+            'page' => $page
+        ]);
+
+        if (!$response->ok()) {
+            return [];
+        }
+
+        return $response->json();
     }
 
     /**
@@ -84,9 +146,9 @@ trait ManagesSubscription
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
-    public function subscriptions()
+    public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::$subscriptionModel, $this->getForeignKey())
             ->orderBy('created_at', 'desc');
@@ -99,10 +161,10 @@ trait ManagesSubscription
     {
         if ($name) {
             return $this->subscriptions->where('name', $name)
-                ->where('paystack_status', Subscription::ACTVIE_STATUS)
+                ->where('paystack_status', Subscription::ACTIVE_STATUS)
                 ->first();
         }
 
-        return $this->subscriptions->where('paystack_status', Subscription::ACTVIE_STATUS)->first();
+        return $this->subscriptions->where('paystack_status', Subscription::ACTIVE_STATUS)->first();
     }
 }

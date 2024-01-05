@@ -4,11 +4,13 @@ namespace Collector\Actions;
 
 use Collector\Collector;
 use Collector\Concerns\CreateSubscription;
+use Collector\Models\Subscription;
 use Collector\Plan;
+use Throwable;
 
 class CreateSubscriptions implements CreateSubscription
 {
-    public function create($collectable, $plan, $options = [])
+    public function handle($collectable, $plan, $options = [])
     {
         $type = $collectable->collectorConfiguration('type');
 
@@ -28,6 +30,14 @@ class CreateSubscriptions implements CreateSubscription
 
     protected function cancelExistingSubscriptions($collectable)
     {
+        $collectable->subscriptions()->where('paystack_status', '!=', Subscription::CANCELLED_STATUS)
+            ->each(function ($subscription) {
+                try {
+                    $subscription->cancelNow();
 
+                } catch (Throwable $e) {
+                    //
+                }
+            });
     }
 }

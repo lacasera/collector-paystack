@@ -24,6 +24,7 @@ class FrontendState
             'monthlyPlans' => $plans->where('interval', 'monthly')->where('active', true)->values(),
             'yearlyPlans' => $plans->where('interval', 'yearly')->where('active', true)->values(),
             'cancelation' => config('collector.cancelation'),
+            'portalUrl' => route('collector.portal')
         ];
     }
 

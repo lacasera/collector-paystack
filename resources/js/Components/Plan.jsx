@@ -1,10 +1,11 @@
-import {useState} from "react"
+import React, {useState} from "react"
 import PrimaryButton from "./Button/PrimaryButton";
 import Feature from "./Feature";
 import DangerButton from "./Button/DangerButton";
 import CancelSubscription from "./Modal/CancelSubscription";
 import SecondaryButton from "./Button/SecondaryButton";
 import TealButton from "./Button/TealButton";
+import ChangeSubscription from "./Modal/ChangeSubscription";
 
 const  subscribeToPlan = async (planId) => {
     const response = await axios.post(`/collector/subscription`, {
@@ -18,20 +19,12 @@ const  subscribeToPlan = async (planId) => {
 }
 
 export default function Plan(props) {
-    const [showCancelModel, setShowCancelModel] = useState(false)
     const {plan, currentPlan} = props;
-
     const hasPlan = () => plan.id === currentPlan;
 
-    console.log(plan)
+    const [showChangePlanModal, setChangePlanModal] = useState(false);
     return (
         <>
-            <CancelSubscription
-                show={showCancelModel}
-                details={props.cancelation}
-                onCloseModal={() => setShowCancelModel(false)}
-                cancelSubscription={() => setShowCancelModel(false)}
-            />
             <div className='bg-[#E7E9EA]/50 rounded-md shadow-sm min-w-[600px]'>
                 <div className='bg-white rounded-t-md rounded-b-sm px-4 py-3 border-x border-t
                                         border-x-gray-300/40 border-t-gray-300/20 relative'>
@@ -56,16 +49,21 @@ export default function Plan(props) {
                 <div className='px-4 py-3 flex flex-row justify-end border-x border-b border-t
                      border-gray-300 border-t-gray-300/20 border-x-gray-300/40 rounded-b-md h-[60px]'>
                     {hasPlan() ?
-                            <TealButton onClick={() => setShowCancelModel(true)}>
-                                (Current Plan) Cancel
-                            </TealButton>
+                        <span>Currently Subscribed</span>
                         :
-                        <PrimaryButton onClick={() => subscribeToPlan(plan.id)}>
+                        <PrimaryButton onClick={() => setChangePlanModal(true)}>
                             Subscribe
                         </PrimaryButton>
                     }
                 </div>
             </div>
+
+            <ChangeSubscription
+                show={showChangePlanModal}
+                plan={plan.id}
+                onCloseModal={() => setChangePlanModal(false)}
+                cancelSubscription={() => setShowCancelModel(false)}
+            />
         </>
     )
 }

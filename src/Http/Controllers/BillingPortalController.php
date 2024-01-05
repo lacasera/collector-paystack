@@ -2,6 +2,7 @@
 
 namespace Collector\Http\Controllers;
 
+use Collector\Collector;
 use Collector\Events\PaymentVerified;
 use Collector\FrontendState;
 use Collector\GuessCollectableTypes;
@@ -33,8 +34,16 @@ class BillingPortalController
             PaymentVerified::dispatch($collectable, $request->get('reference'));
         }
 
-        // Index.jsx ----> Subscribed (or user with a Subscription)
-        // Plans.jsx ----> when user is not subscribe (or user wants to change Subscription)
+        if ($collectable->currentActivePlan() && !$request->has('change')) {
+            $plans = Collector::plans($type);
+            return Inertia::render('Index', [
+                'currentPlan' => $plans->where('id', $collectable->currentActivePlan()?->paystack_plan)->first(),
+                'paystackCustomer' => $collectable->getAsPaystackCustomer(),
+                'nextBillingDate' => $collectable->currentActivePlan()->getNextBillingDate()->format('jS F, Y'),
+                'history' => $collectable->transctionHistroy()
+            ]);
+        }
+
         return Inertia::render('Plans', [
             'subscribed' => $collectable->currentActivePlan()?->paystack_plan,
         ]);
