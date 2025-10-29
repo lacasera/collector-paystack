@@ -1,0 +1,36 @@
+{
+  "name": "collector-paystack",
+  "version": "2.2.0",
+  "description": "A modern Laravel package for managing subscription billing with PayStack integration",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@headlessui/react": "^2.1.8",
+    "@tailwindcss/forms": "^0.5.9",
+    "@types/axios": "^0.9.36",
+    "@types/node": "^24.9.1",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@vitejs/plugin-react": "^4.3.3",
+    "autoprefixer": "^10.4.20",
+    "focus-trap": "^7.6.0",
+    "laravel-vite-plugin": "^1.0.5",
+    "postcss": "^8.4.47",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwindcss": "^3.4.13",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.8"
+  },
+  "dependencies": {
+    "@inertiajs/react": "^1.2.0",
+    "axios": "^1.7.7",
+    "react-hot-toast": "^2.4.1"
+  }
+}

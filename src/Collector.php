@@ -1,0 +1,18 @@
+<?php
+
+namespace Collector;
+
+use Illuminate\Support\Facades\Facade;
+
+class Collector extends Facade
+{
+    /**
+     * Get the registered name of the component.
+     *
+     * @return string
+     */
+    protected static function getFacadeAccessor()
+    {
+        return 'collector.manager';
+    }
+}

@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  [type='text'],
+  [type='email'],
+  [type='url'],
+  [type='password'],
+  [type='number'],
+  [type='date'],
+  [type='datetime-local'],
+  [type='month'],
+  [type='search'],
+  [type='tel'],
+  [type='time'],
+  [type='week'],
+  [multiple],
+  textarea {
+    @apply w-full placeholder:text-base placeholder:text-[#d0d7de] placeholder:font-light;
+  }
+}
+
+@layer utilities {
+    .w-92 {
+        width: 24rem;
+    }
+
+    .bg-site {
+        background: linear-gradient(352.43deg,hsla(0,0%,100%,.2), rgba(202,206,208,0.1) 78.01%, rgba(221,221,221, 0.6)), #fff;
+    }
+}

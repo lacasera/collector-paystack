@@ -1,0 +1,68 @@
+{
+    "name": "lacasera/collector-paystack",
+    "description": "An implementation of multiple payment platforms ",
+    "keywords": [
+        "lacasera",
+        "collector-paystack"
+    ],
+    "homepage": "https://github.com/lacasera/collector-paystack",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Agyenim Boateng",
+            "email": "aboateng62@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.2|^8.3",
+        "illuminate/contracts": "^10.0|^11.0|^12.0",
+        "illuminate/database": "^10.0|^11.0|^12.0",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "illuminate/http": "^10.0|^11.0|^12.0",
+        "illuminate/validation": "^10.0|^11.0|^12.0",
+        "inertiajs/inertia-laravel": "^1.0|^2.0",
+        "moneyphp/money": "^4.5",
+        "guzzlehttp/guzzle": "^7.8",
+        "ext-intl": "*"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.17",
+        "orchestra/testbench": "^8.0|^9.0|^10.0",
+        "phpunit/phpunit": "^10.0|^11.0",
+        "pestphp/pest": "^2.0",
+        "pestphp/pest-plugin-laravel": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Collector\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Collector\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage",
+        "pint": "./vendor/bin/pint --dirty"
+
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+              "Collector\\CollectorServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

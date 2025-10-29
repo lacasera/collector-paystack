@@ -1,0 +1,13 @@
+{
+  "resources/css/collector.css": {
+    "file": "css/collector.css",
+    "src": "resources/css/collector.css",
+    "isEntry": true
+  },
+  "resources/js/app.tsx": {
+    "file": "js/app.js",
+    "name": "app",
+    "src": "resources/js/app.tsx",
+    "isEntry": true
+  }
+}
