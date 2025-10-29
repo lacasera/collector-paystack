@@ -21,11 +21,11 @@ class CollectorServiceProvider extends ServiceProvider
         });
 
         Collector::collectable(User::class)->authorize(function (User $collectable, Request $request) {
-            return $request->user() &&
-                $request->user()->id == $collectable->id;
+            return $request->user()
+                && $request->user()->id == $collectable->id;
         });
 
-        //Collector::collectable(User::class)->checkPlanEligibility(function (User $collectable, Plan $plan) {
+        // Collector::collectable(User::class)->checkPlanEligibility(function (User $collectable, Plan $plan) {
         // if ($billable->projects > 5 && $plan->name == 'Basic') {
         //     throw ValidationException::withMessages([
         //         'plan' => 'You have too many projects for the selected plan.'

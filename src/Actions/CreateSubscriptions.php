@@ -26,8 +26,5 @@ class CreateSubscriptions implements CreateSubscription
         return $collectable->initiateTransaction($customer, $payStackPlan->id);
     }
 
-    protected function cancelExistingSubscriptions($collectable)
-    {
-
-    }
+    protected function cancelExistingSubscriptions($collectable) {}
 }

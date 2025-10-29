@@ -19,9 +19,9 @@ class CollectorServiceProvider extends ServiceProvider
     {
         $this->app->singleton(CreateSubscription::class, CreateSubscriptions::class);
 
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'collector');
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-        $this->loadRoutesFrom(__DIR__.'/../routes/routes.php');
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'collector');
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadRoutesFrom(__DIR__ . '/../routes/routes.php');
 
         $this->registerPublishables();
         $this->registerCommands();
@@ -33,7 +33,7 @@ class CollectorServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/collector.php', 'collector');
+        $this->mergeConfigFrom(__DIR__ . '/../config/collector.php', 'collector');
         $this->app->singleton('collector.manager', CollectorManager::class);
     }
 
@@ -47,15 +47,15 @@ class CollectorServiceProvider extends ServiceProvider
         }
 
         $this->publishes([
-            __DIR__.'/../config/collector.php' => config_path('collector.php'),
+            __DIR__ . '/../config/collector.php' => config_path('collector.php'),
         ], 'collector-config');
 
         $this->publishes([
-            __DIR__.'/../resources/views' => resource_path('views/vendor/collector'),
+            __DIR__ . '/../resources/views' => resource_path('views/vendor/collector'),
         ], 'collector-views');
 
         $this->publishes([
-            __DIR__.'/../public' => public_path('vendor/collector'),
+            __DIR__ . '/../public' => public_path('vendor/collector'),
         ], 'collector-assets');
     }
 

@@ -40,6 +40,6 @@ class SubscriptionBuilder
 
     public function checkout(array $options)
     {
-        //return
+        // return
     }
 }

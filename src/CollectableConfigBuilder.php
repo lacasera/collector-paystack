@@ -32,7 +32,6 @@ class CollectableConfigBuilder
         return $this;
     }
 
-
     public function chargePerSeat(string $seatName, callable $callback)
     {
         Collector::chargePerSeat($this->type, $seatName, $callback);

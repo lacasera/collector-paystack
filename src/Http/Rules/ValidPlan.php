@@ -26,7 +26,7 @@ class ValidPlan implements Rule
 
     public function message()
     {
-        return "The selected plan is invalid";
+        return 'The selected plan is invalid';
     }
 
     public function passes($attribute, $value)

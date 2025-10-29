@@ -12,10 +12,7 @@ class SubscribeUserToPlan
     /**
      * Create the event listener.
      */
-    public function __construct()
-    {
-
-    }
+    public function __construct() {}
 
     /**
      * Handle the event.
@@ -30,7 +27,7 @@ class SubscribeUserToPlan
             $collectable->fill([
                 'pm_type' => data_get($transaction, 'authorization.card_type'),
                 'pm_last_four' => data_get($transaction, 'authorization.last4'),
-                'pm_expiration' => data_get($transaction, 'authorization.exp_month').'/'.data_get($transaction, 'authorization.exp_year'),
+                'pm_expiration' => data_get($transaction, 'authorization.exp_month') . '/' . data_get($transaction, 'authorization.exp_year'),
             ])->save();
         }
 

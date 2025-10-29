@@ -8,7 +8,9 @@ use Illuminate\Queue\SerializesModels;
 
 class WebhookReceived
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     public array $payload;
 

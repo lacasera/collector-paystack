@@ -35,7 +35,7 @@ class FrontendState
 
         return $plans->map(function ($plan) use ($prices) {
             if (! $paystackPrice = $prices->firstWhere('plan_code', $plan->id)) {
-                throw new \RuntimeException('Plan ['.$plan->id.'] does not exist in your PayStack account.');
+                throw new \RuntimeException('Plan [' . $plan->id . '] does not exist in your PayStack account.');
             }
 
             $plan->rawPrice = $paystackPrice['amount'];

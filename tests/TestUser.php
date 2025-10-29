@@ -3,7 +3,6 @@
 namespace Collector\Tests;
 
 use Collector\Collectable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class TestUser extends Authenticatable

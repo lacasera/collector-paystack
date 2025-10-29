@@ -4,6 +4,4 @@ namespace Collector\Exceptions;
 
 use Exception;
 
-class SignatureVerificationException extends Exception
-{
-}
+class SignatureVerificationException extends Exception {}

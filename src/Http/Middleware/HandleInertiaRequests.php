@@ -16,7 +16,7 @@ class HandleInertiaRequests extends Middleware
      */
     public function version(Request $request)
     {
-        return 'collector-'.parent::version($request);
+        return 'collector-' . parent::version($request);
     }
 
     /**
@@ -31,8 +31,8 @@ class HandleInertiaRequests extends Middleware
         return array_merge(parent::share($request), [
             'collector' => [
                 'flash' => [
-                    'success' => fn () => $request->session()->pull('collector.flash.success'),
-                    'error' => fn () => $request->session()->pull('collector.flash.error'),
+                    'success' => fn() => $request->session()->pull('collector.flash.success'),
+                    'error' => fn() => $request->session()->pull('collector.flash.error'),
                 ],
             ],
         ]);
