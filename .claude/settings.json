@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(composer show *)",
+      "Bash(vendor/bin/phpunit)",
+      "Bash(gh run *)",
+      "Bash(vendor/bin/pest)",
+      "Bash(curl -s -o /dev/null -w \"anon api root: %{http_code}\\\\n\" https://api.github.com)",
+      "Bash(gh auth *)",
+      "Bash(curl -s -o /dev/null -w 'authed /user: %{http_code}\\\\n' -H 'Authorization: Bearer __TRACKED_VAR__' https://api.github.com/user)",
+      "Bash(curl -s https://www.githubstatus.com/api/v2/components.json)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(c['name'],'->',c['status']\\) for c in d['components'] if c['name'] in \\('Actions','API Requests','Git Operations'\\)]\")"
+    ]
+  }
+}

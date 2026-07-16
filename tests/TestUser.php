@@ -3,11 +3,14 @@
 namespace Collector\Tests;
 
 use Collector\Collectable;
+use Collector\Tests\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class TestUser extends Authenticatable
 {
     use Collectable;
+    use HasFactory;
 
     protected $table = 'users';
 
@@ -41,4 +44,19 @@ class TestUser extends Authenticatable
         'trial_ends_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    protected static function newFactory(): UserFactory
+    {
+        return UserFactory::new();
+    }
+
+    /**
+     * The package schema + webhook handlers key subscriptions on `user_id`
+     * (matching the real App\Models\User). Pin the test model's foreign key so
+     * the Subscription relationships resolve regardless of this class name.
+     */
+    public function getForeignKey(): string
+    {
+        return 'user_id';
+    }
 }

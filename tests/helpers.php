@@ -1,0 +1,86 @@
+<?php
+
+use Illuminate\Support\Facades\Http;
+
+if (! function_exists('paystack_fixture')) {
+    /**
+     * Load a Paystack JSON fixture as an associative array.
+     *
+     * Names are relative to tests/Fixtures/Paystack, without the .json
+     * extension, e.g. "customer" or "webhooks/charge-success".
+     */
+    function paystack_fixture(string $name): array
+    {
+        $path = __DIR__ . '/Fixtures/Paystack/' . $name . '.json';
+
+        if (! is_file($path)) {
+            throw new InvalidArgumentException("Missing Paystack fixture [{$name}] at {$path}.");
+        }
+
+        return json_decode(file_get_contents($path), true, flags: JSON_THROW_ON_ERROR);
+    }
+}
+
+if (! function_exists('fake_paystack')) {
+    /**
+     * Register HTTP fakes for the Paystack endpoints the package touches.
+     *
+     * Pass $overrides to replace individual endpoint responses per-test
+     * (e.g. to simulate a failed customer creation or a declined charge).
+     */
+    function fake_paystack(array $overrides = []): void
+    {
+        Http::fake(array_merge([
+            'https://api.paystack.co/customer*' => Http::response([
+                'status' => true,
+                'data' => paystack_fixture('customer'),
+            ]),
+            'https://api.paystack.co/plan*' => Http::response([
+                'status' => true,
+                'data' => paystack_fixture('plans'),
+            ]),
+            'https://api.paystack.co/transaction/initialize*' => Http::response([
+                'status' => true,
+                'data' => [
+                    'authorization_url' => 'https://checkout.paystack.test/redirect/REF_test123',
+                    'access_code' => 'access_test123',
+                    'reference' => 'REF_test123',
+                ],
+            ]),
+            'https://api.paystack.co/transaction/verify/*' => Http::response([
+                'status' => true,
+                'data' => paystack_fixture('transaction-verify'),
+            ]),
+            'https://api.paystack.co/subscription/disable*' => Http::response([
+                'status' => true,
+                'data' => ['message' => 'Subscription disabled successfully'],
+            ]),
+            'https://api.paystack.co/subscription/*' => Http::response([
+                'status' => true,
+                'data' => paystack_fixture('subscription'),
+            ]),
+        ], $overrides));
+    }
+}
+
+if (! function_exists('paystack_signature')) {
+    /**
+     * Compute the PayStack webhook signature for a raw request body.
+     */
+    function paystack_signature(string $body, ?string $secret = null): string
+    {
+        return hash_hmac('sha512', $body, $secret ?? config('collector.secret'));
+    }
+}
+
+if (! function_exists('paystack_webhook_headers')) {
+    /**
+     * Build request headers carrying a valid PayStack webhook signature.
+     */
+    function paystack_webhook_headers(string $body, ?string $secret = null): array
+    {
+        return [
+            'X-Paystack-Signature' => paystack_signature($body, $secret),
+        ];
+    }
+}
