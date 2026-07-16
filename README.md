@@ -9,7 +9,7 @@ A modern Laravel package for managing subscription billing with PayStack integra
 
 ## Features
 
-- 🚀 Modern Laravel 10/11/12 support
+- 🚀 Modern Laravel 10/11/12/13 support
 - 💳 Complete PayStack integration
 - 📊 Subscription management (create, update, cancel)
 - 🎨 Beautiful React-based billing portal  
@@ -22,7 +22,7 @@ A modern Laravel package for managing subscription billing with PayStack integra
 ## Requirements
 
 - PHP 8.2+
-- Laravel 10.0+, 11.0+, or 12.0+
+- Laravel 10.0+, 11.0+, 12.0+, or 13.0+
 - PayStack account and API keys
 
 ## Installation
