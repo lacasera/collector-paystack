@@ -1,0 +1,21 @@
+{
+    "status": "success",
+    "reference": "REF_test123",
+    "amount": 500000,
+    "currency": "NGN",
+    "customer": {
+        "customer_code": "CUS_test123",
+        "email": "customer@example.com"
+    },
+    "authorization": {
+        "authorization_code": "AUTH_test123",
+        "card_type": "visa",
+        "last4": "4081",
+        "exp_month": "12",
+        "exp_year": "2030"
+    },
+    "plan_object": {
+        "plan_code": "PLN_worid7k3e8v5afz",
+        "name": "Basic"
+    }
+}

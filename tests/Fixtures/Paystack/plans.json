@@ -1,0 +1,50 @@
+[
+    {
+        "id": 1,
+        "name": "Basic",
+        "plan_code": "PLN_worid7k3e8v5afz",
+        "amount": 500000,
+        "interval": "monthly",
+        "currency": "NGN"
+    },
+    {
+        "id": 2,
+        "name": "Basic",
+        "plan_code": "PLN_2y8oe4r1gx7gakr",
+        "amount": 5400000,
+        "interval": "annually",
+        "currency": "NGN"
+    },
+    {
+        "id": 3,
+        "name": "Standard",
+        "plan_code": "PLN_wc54sx7clavvy6d",
+        "amount": 1500000,
+        "interval": "monthly",
+        "currency": "NGN"
+    },
+    {
+        "id": 4,
+        "name": "Standard",
+        "plan_code": "PLN_b9kvd76fufw4vu9",
+        "amount": 16200000,
+        "interval": "annually",
+        "currency": "NGN"
+    },
+    {
+        "id": 5,
+        "name": "Premium",
+        "plan_code": "PLN_g47cv05s5jsz29k",
+        "amount": 3000000,
+        "interval": "monthly",
+        "currency": "NGN"
+    },
+    {
+        "id": 6,
+        "name": "Unlimited",
+        "plan_code": "PLN_l2qz2ab1wjhh4yx",
+        "amount": 6000000,
+        "interval": "monthly",
+        "currency": "NGN"
+    }
+]

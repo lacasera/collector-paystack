@@ -1,0 +1,18 @@
+{
+    "subscription_code": "SUB_test123",
+    "email_token": "email_tok_test123",
+    "status": "active",
+    "amount": 500000,
+    "plan": {
+        "plan_code": "PLN_worid7k3e8v5afz",
+        "name": "Basic"
+    },
+    "customer": {
+        "customer_code": "CUS_test123",
+        "email": "customer@example.com"
+    },
+    "most_recent_invoice": {
+        "period_start": "2026-06-01T00:00:00.000Z",
+        "period_end": "2026-07-01T00:00:00.000Z"
+    }
+}

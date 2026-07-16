@@ -1,0 +1,30 @@
+{
+    "id": 90897285,
+    "customer_code": "CUS_test123",
+    "email": "customer@example.com",
+    "first_name": "Ada",
+    "last_name": "Lovelace",
+    "phone": "08012345678",
+    "authorizations": [
+        {
+            "authorization_code": "AUTH_test123",
+            "card_type": "visa",
+            "last4": "4081",
+            "exp_month": "12",
+            "exp_year": "2030",
+            "bank": "TEST BANK",
+            "reusable": true
+        }
+    ],
+    "subscriptions": [
+        {
+            "subscription_code": "SUB_test123",
+            "email_token": "email_tok_test123",
+            "status": "active",
+            "plan": {
+                "plan_code": "PLN_worid7k3e8v5afz",
+                "name": "Basic"
+            }
+        }
+    ]
+}

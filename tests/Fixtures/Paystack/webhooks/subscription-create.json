@@ -1,0 +1,16 @@
+{
+    "event": "subscription.create",
+    "data": {
+        "subscription_code": "SUB_test123",
+        "email_token": "email_tok_test123",
+        "status": "active",
+        "customer": {
+            "customer_code": "CUS_test123",
+            "email": "customer@example.com"
+        },
+        "plan": {
+            "plan_code": "PLN_worid7k3e8v5afz",
+            "name": "Basic"
+        }
+    }
+}
