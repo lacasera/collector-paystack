@@ -5,6 +5,7 @@ namespace Collector\PayStack;
 use Collector\Models\Subscription;
 use Collector\Plan;
 use Collector\SubscriptionBuilder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 trait ManagesSubscription
 {
@@ -60,7 +61,7 @@ trait ManagesSubscription
             return null;
         }
 
-        if (! data_get($response->json('data'), 'status') === 'success') {
+        if (data_get($response->json('data'), 'status') !== 'success') {
             return null;
         }
 
@@ -82,7 +83,7 @@ trait ManagesSubscription
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function subscriptions()
     {

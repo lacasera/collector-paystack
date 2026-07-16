@@ -24,7 +24,7 @@ class BillingPortalController
         Inertia::setRootView('collector::app');
 
         View::share([
-            'cssPath' => __DIR__ . '/../../../public/css/app.css',
+            'cssPath' => __DIR__ . '/../../../public/css/collector.css',
             'jsPath' => __DIR__ . '/../../../public/js/app.js',
         ]);
 

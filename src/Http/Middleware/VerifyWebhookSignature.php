@@ -6,21 +6,20 @@ use Closure;
 use Collector\Exceptions\SignatureVerificationException;
 use Collector\PayStack\WebhookSignature;
 use Illuminate\Http\Request;
-use Inertia\Middleware;
-use Symfony\Component\Finder\Exception\AccessDeniedException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
-class VerifyWebhookSignature extends Middleware
+class VerifyWebhookSignature
 {
     public function handle(Request $request, Closure $next)
     {
         try {
             WebhookSignature::verifyHeader(
                 $request->getContent(),
-                $request->header('X_PAYSTACK_SIGNATURE'),
+                $request->header('x-paystack-signature'),
                 config('collector.secret')
             );
         } catch (SignatureVerificationException $exception) {
-            throw new AccessDeniedException($exception->getMessage(), $exception->getCode());
+            throw new AccessDeniedHttpException($exception->getMessage(), $exception);
         }
 
         return $next($request);

@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Illuminate\Http\JsonResponse;
 
 class CollectorWebhookController extends Controller
 {
@@ -25,7 +26,7 @@ class CollectorWebhookController extends Controller
     }
 
     /**
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function __invoke(Request $request)
     {
@@ -47,40 +48,45 @@ class CollectorWebhookController extends Controller
      */
     protected function handleSubscriptionCreate(array $payload)
     {
-        $customerId = data_get($payload, 'data.customer.email');
+        $user = Collector::findCollectable(data_get($payload, 'data.customer.email'));
 
-        $user = Collector::findCollectable($customerId);
-
-        if ($user && ! $user->hasPayStackId()) {
-            $paystackCustomer = $user->getAsPaystackCustomer();
+        if (! $user) {
+            return;
         }
 
-        if ($user) {
-            $data = data_get($payload, 'data');
-            $planCode = $data['plan']['plan_code'];
+        if (! $user->hasPayStackId()) {
+            $user->forceFill([
+                'paystack_id' => data_get($payload, 'data.customer.customer_code'),
+            ])->save();
+        }
 
-            if (! $user->hasActivePlan($planCode)) {
-                $paystackSubscription = $this->guessSubscription(
-                    $user,
-                    data_get($paystackCustomer, 'subscriptions'),
-                    $planCode
-                );
+        $planCode = data_get($payload, 'data.plan.plan_code');
 
-                if ($paystackSubscription) {
-                    /** @var Model $model */
-                    $model = new Subscription::$subscriptionModel();
+        if (! $planCode || $user->hasActivePlan($planCode)) {
+            return;
+        }
 
-                    $model->fill([
-                        'name' => data_get($paystackSubscription, 'plan.name'),
-                        'user_id' => $user->id,
-                        'quantity' => 1,
-                        'paystack_email_token' => data_get($paystackSubscription, 'email_token'),
-                        'paystack_id' => data_get($paystackSubscription, 'subscription_code'),
-                        'paystack_status' => data_get($paystackSubscription, 'status'),
-                        'paystack_plan' => $planCode,
-                    ])->save();
-                }
-            }
+        $paystackCustomer = $user->getAsPaystackCustomer();
+
+        $paystackSubscription = $this->guessSubscription(
+            $user,
+            data_get($paystackCustomer, 'subscriptions', []),
+            $planCode
+        );
+
+        if ($paystackSubscription) {
+            /** @var Model $model */
+            $model = new Subscription::$subscriptionModel();
+
+            $model->fill([
+                'name' => data_get($paystackSubscription, 'plan.name'),
+                'user_id' => $user->id,
+                'quantity' => 1,
+                'paystack_email_token' => data_get($paystackSubscription, 'email_token'),
+                'paystack_id' => data_get($paystackSubscription, 'subscription_code'),
+                'paystack_status' => data_get($paystackSubscription, 'status'),
+                'paystack_plan' => $planCode,
+            ])->save();
         }
     }
 
@@ -105,7 +111,7 @@ class CollectorWebhookController extends Controller
             return;
         }
 
-        $subscription = Subscription::$subscriptionModel::find($subscriptionCode);
+        $subscription = Subscription::$subscriptionModel::where('paystack_id', $subscriptionCode)->first();
 
         SubscriptionCanceled::dispatch($user, $subscription);
     }
