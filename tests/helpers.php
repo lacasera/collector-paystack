@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Testing\TestResponse;
 
 if (! function_exists('paystack_fixture')) {
     /**
@@ -82,5 +83,25 @@ if (! function_exists('paystack_webhook_headers')) {
         return [
             'X-Paystack-Signature' => paystack_signature($body, $secret),
         ];
+    }
+}
+
+if (! function_exists('post_webhook')) {
+    /**
+     * POST a webhook payload to the collector endpoint with a signature header.
+     *
+     * Sends the raw JSON body so the signature covers exactly what the
+     * middleware verifies. Pass $signature to override with an invalid value.
+     */
+    function post_webhook(array $payload, ?string $signature = null): TestResponse
+    {
+        $body = json_encode($payload);
+
+        $signature ??= paystack_signature($body);
+
+        return test()->call('POST', '/collector/webhooks', [], [], [], [
+            'HTTP_X_PAYSTACK_SIGNATURE' => $signature,
+            'CONTENT_TYPE' => 'application/json',
+        ], $body);
     }
 }

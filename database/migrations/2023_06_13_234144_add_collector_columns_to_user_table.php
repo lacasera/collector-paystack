@@ -34,6 +34,10 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
+            // Drop the index before the column it references so the rollback
+            // succeeds on SQLite (which refuses to drop an indexed column).
+            $table->dropIndex(['paystack_id']);
+
             $table->dropColumn([
                 'paystack_id',
                 'pm_type',

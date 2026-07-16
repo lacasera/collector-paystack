@@ -70,7 +70,7 @@ class Subscription extends Model
 
     public function isActive(): bool
     {
-        return $this->status === self::ACTIVE_STATUS || ($this->ends_at && $this->ends_at->isFuture());
+        return $this->paystack_status === self::ACTIVE_STATUS || ($this->ends_at && $this->ends_at->isFuture());
     }
 
     /**
