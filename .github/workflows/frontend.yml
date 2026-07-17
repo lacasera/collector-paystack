@@ -1,0 +1,41 @@
+name: frontend
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    name: Type-check, test & build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Component tests
+        run: npm run test
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Verify the billing portal assets were built
+        # BillingPortalController inlines these exact files at runtime.
+        run: |
+          test -f public/js/app.js || { echo "Missing public/js/app.js"; exit 1; }
+          test -f public/css/collector.css || { echo "Missing public/css/collector.css"; exit 1; }
+          echo "Portal assets built successfully."

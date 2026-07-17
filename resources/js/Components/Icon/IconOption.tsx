@@ -1,4 +1,5 @@
-export default function IconOption(props) {
+import type { SVGProps } from 'react';
+export default function IconOption(props: SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" viewBox="0 0 4 16">
             <path d="M-8.74228e-08 2C-1.35705e-07 3.10457 0.89543 4 2 4C3.10457 4 4 3.10457 4 2C4 0.89543 3.10457 -3.91405e-08 2 -8.74228e-08C0.895431 -1.35705e-07 -3.91405e-08 0.89543 -8.74228e-08 2Z"></path>

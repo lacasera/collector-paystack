@@ -1,4 +1,5 @@
-export default function IconHome(props) {
+import type { SVGProps } from 'react';
+export default function IconHome(props: SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} xmlns="http://www.w3.org/2000/svg" width="512" height="512" x="0" y="0" viewBox="0 0 511 511.999">
             <g>

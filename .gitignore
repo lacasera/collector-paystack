@@ -3,10 +3,11 @@
 /vendor
 
 # Build outputs
+# NOTE: The compiled billing-portal assets (public/js/app.js, public/css/collector.css)
+# are intentionally committed — the portal inlines them at runtime and the package
+# ships them pre-built, so they must not be ignored here.
 /public/hot
 /public/storage
-/public/css/app.css
-/public/js/app.js
 /storage/*.key
 
 # Environment files

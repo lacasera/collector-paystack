@@ -21,12 +21,11 @@ interface CancelSubscriptionProps {
     afterCancelSuccess?: () => void;
 }
 
-export default function CancelSubscription({show, onCloseModal, details, afterCancelSuccess}: CancelSubscriptionProps): React.JSX.Element {
+export default function CancelSubscription({show, onCloseModal, details}: CancelSubscriptionProps): React.JSX.Element {
     const reasonInput = React.useRef<HTMLInputElement>(null);
     const {
         data,
         setData,
-        delete: destroy,
         reset,
         errors,
     } = useForm({

@@ -1,6 +1,6 @@
 import IconCheckmark from "./Icon/IconCheckmark";
 
-export default function Feature(props) {
+export default function Feature(props: { title: string }) {
     const { title } = props;
     return (
         <li className='inline-flex items-center'>

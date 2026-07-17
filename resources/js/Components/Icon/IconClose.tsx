@@ -1,4 +1,5 @@
-export default function IconClose(props) {
+import type { SVGProps } from 'react';
+export default function IconClose(props: SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} width="26" height="25" viewBox="0 0 26 25" xmlns="http://www.w3.org/2000/svg">
             <path
