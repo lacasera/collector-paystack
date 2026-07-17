@@ -2,40 +2,24 @@
 
 namespace Collector\Http\Rules;
 
+use Closure;
 use Collector\Collector;
-use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Contracts\Validation\ValidationRule;
 
-class ValidPlan implements Rule
+class ValidPlan implements ValidationRule
 {
     /**
-     * The plan type.
-     *
-     * @var string
+     * @param  string  $type  The collectable plan type.
      */
-    protected $type;
+    public function __construct(protected string $type) {}
 
-    /**
-     * Create a new rule instance.
-     *
-     * @param  string  $type
-     */
-    public function __construct($type)
-    {
-        $this->type = $type;
-    }
-
-    public function message()
-    {
-        return 'The selected plan is invalid';
-    }
-
-    public function passes($attribute, $value)
+    public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         $plan = Collector::plans($this->type)
-            ->first(function ($plan) use ($value) {
-                return $plan->id == $value;
-            });
+            ->first(fn($plan) => $plan->id == $value);
 
-        return ! is_null($plan) && $plan->active;
+        if (is_null($plan) || ! $plan->active) {
+            $fail('The selected plan is invalid.');
+        }
     }
 }

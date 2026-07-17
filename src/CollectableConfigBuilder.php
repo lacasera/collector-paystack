@@ -24,23 +24,4 @@ class CollectableConfigBuilder
 
         return $this;
     }
-
-    public function checkPlanEligibility(callable $callback)
-    {
-        Collector::checkPlanEligibilityUsing($this->type, $callback);
-
-        return $this;
-    }
-
-    public function chargePerSeat(string $seatName, callable $callback)
-    {
-        Collector::chargePerSeat($this->type, $seatName, $callback);
-
-        return $this;
-    }
-
-    public function plan($name, $id)
-    {
-        return Collector::plan($this->type, $name, $id);
-    }
 }

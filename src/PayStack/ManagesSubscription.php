@@ -3,8 +3,6 @@
 namespace Collector\PayStack;
 
 use Collector\Models\Subscription;
-use Collector\Plan;
-use Collector\SubscriptionBuilder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 trait ManagesSubscription
@@ -21,14 +19,6 @@ trait ManagesSubscription
         }
 
         return $response->json('data');
-    }
-
-    /**
-     * @return SubscriptionBuilder
-     */
-    public function newSubscription(Plan $plan, $prices = [])
-    {
-        return new SubscriptionBuilder($this, $plan->name, $prices);
     }
 
     /**

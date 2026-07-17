@@ -12,7 +12,14 @@ trait RetrieveCollectableModels
 
         $id = $id ?: request('billableId') ?: Auth::id();
 
-        if (! Collector::collectableModel($type) || ! $collectable = Collector::collectableModel($type)::find($id)) {
+        if (! Collector::collectableModel($type)) {
+            abort(404);
+        }
+
+        $collectable = Collector::resolveCollectable($type, request())
+            ?: Collector::collectableModel($type)::find($id);
+
+        if (! $collectable) {
             abort(404);
         }
 
