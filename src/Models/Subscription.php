@@ -163,11 +163,6 @@ class Subscription extends Model
         return false;
     }
 
-    public function swap(): void
-    {
-        // Implementation for plan swapping
-    }
-
     private function getEndingDate(): Carbon
     {
         $subscription = $this->owner->fetchSubscription($this->paystack_id);

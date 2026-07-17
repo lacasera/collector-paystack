@@ -55,6 +55,10 @@ abstract class TestCase extends Orchestra
             'prefix' => '',
         ]);
 
+        // Required by the `web` middleware group (session/cookie encryption) used
+        // by the billing routes.
+        config()->set('app.key', 'base64:' . base64_encode(random_bytes(32)));
+
         config()->set('collector.secret', 'test_secret_key');
         config()->set('collector.currency', 'NGN');
         config()->set('collector.collectables.user.model', TestUser::class);

@@ -2,6 +2,7 @@
 
 namespace Collector\Http\Controllers;
 
+use Collector\Actions\SyncSubscription;
 use Collector\Collector;
 use Collector\Events\InvoiceCreated;
 use Collector\Events\PaymentReceived;
@@ -9,12 +10,10 @@ use Collector\Events\SubscriptionCanceled;
 use Collector\Events\WebhookReceived;
 use Collector\Http\Middleware\VerifyWebhookSignature;
 use Collector\Models\Subscription;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Illuminate\Http\JsonResponse;
 
 class CollectorWebhookController extends Controller
 {
@@ -25,10 +24,7 @@ class CollectorWebhookController extends Controller
         }
     }
 
-    /**
-     * @return JsonResponse
-     */
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $payload = json_decode($request->getContent(), true);
 
@@ -43,10 +39,7 @@ class CollectorWebhookController extends Controller
         return response()->json();
     }
 
-    /**
-     * @return void
-     */
-    protected function handleSubscriptionCreate(array $payload)
+    protected function handleSubscriptionCreate(array $payload): void
     {
         $user = Collector::findCollectable(data_get($payload, 'data.customer.email'));
 
@@ -54,75 +47,40 @@ class CollectorWebhookController extends Controller
             return;
         }
 
+        // Persist the PayStack customer code from the payload so the sync action
+        // can fetch the customer's subscriptions to locate this one.
         if (! $user->hasPayStackId()) {
             $user->forceFill([
                 'paystack_id' => data_get($payload, 'data.customer.customer_code'),
             ])->save();
         }
 
-        $planCode = data_get($payload, 'data.plan.plan_code');
-
-        if (! $planCode || $user->hasActivePlan($planCode)) {
-            return;
-        }
-
-        $paystackCustomer = $user->getAsPaystackCustomer();
-
-        $paystackSubscription = $this->guessSubscription(
-            $user,
-            data_get($paystackCustomer, 'subscriptions', []),
-            $planCode
-        );
-
-        if ($paystackSubscription) {
-            /** @var Model $model */
-            $model = new Subscription::$subscriptionModel();
-
-            $model->fill([
-                'name' => data_get($paystackSubscription, 'plan.name'),
-                'user_id' => $user->id,
-                'quantity' => 1,
-                'paystack_email_token' => data_get($paystackSubscription, 'email_token'),
-                'paystack_id' => data_get($paystackSubscription, 'subscription_code'),
-                'paystack_status' => data_get($paystackSubscription, 'status'),
-                'paystack_plan' => $planCode,
-            ])->save();
-        }
+        app(SyncSubscription::class)->sync($user, data_get($payload, 'data.plan.plan_code'));
     }
 
-    /**
-     * @return void
-     */
-    protected function handleSubscriptionNotRenew(array $payload)
+    protected function handleSubscriptionNotRenew(array $payload): void
     {
-        $customerId = data_get($payload, 'data.customer.customer_code');
-        $subscriptionCode = data_get($payload, 'data.subscription_code');
-
-        $user = Collector::findCollectable($customerId);
+        $user = Collector::findCollectable(data_get($payload, 'data.customer.customer_code'));
 
         if (! $user) {
             return;
         }
 
-        $data = data_get($payload, 'data');
-        $planCode = $data['plan']['plan_code'];
-
-        if (! $user->hasActivePlan($planCode)) {
+        if (! $user->hasActivePlan(data_get($payload, 'data.plan.plan_code'))) {
             return;
         }
 
-        $subscription = Subscription::$subscriptionModel::where('paystack_id', $subscriptionCode)->first();
+        $subscription = Subscription::$subscriptionModel::where(
+            'paystack_id',
+            data_get($payload, 'data.subscription_code')
+        )->first();
 
         SubscriptionCanceled::dispatch($user, $subscription);
     }
 
-    /**
-     * @return void
-     */
-    protected function handleChargeSuccess(array $payload)
+    protected function handleChargeSuccess(array $payload): void
     {
-        $customerId = data_get($payload, 'data.customer.customer_code');
-        $user = Collector::findCollectable($customerId);
+        $user = Collector::findCollectable(data_get($payload, 'data.customer.customer_code'));
 
         if (! $user) {
             return;
@@ -131,10 +89,9 @@ class CollectorWebhookController extends Controller
         PaymentReceived::dispatch($user, $payload);
     }
 
-    protected function handleInvoiceCreate(array $payload)
+    protected function handleInvoiceCreate(array $payload): void
     {
-        $customerId = data_get($payload, 'data.customer.customer_code');
-        $user = Collector::findCollectable($customerId);
+        $user = Collector::findCollectable(data_get($payload, 'data.customer.customer_code'));
 
         if (! $user) {
             return;
@@ -143,36 +100,14 @@ class CollectorWebhookController extends Controller
         InvoiceCreated::dispatch($user, $payload);
     }
 
-    /**
-     * @return void
-     */
-    protected function handleInvoicePaymentFailed(array $payload)
+    protected function handleInvoicePaymentFailed(array $payload): void
     {
-        $customerId = data_get($payload, 'data.customer.customer_code');
-        $user = Collector::findCollectable($customerId);
+        $user = Collector::findCollectable(data_get($payload, 'data.customer.customer_code'));
 
         if (! $user) {
             return;
         }
 
         PaymentReceived::dispatch($user, $payload);
-    }
-
-    /**
-     * @return null
-     */
-    private function guessSubscription($collectable, array $subscriptions, $plan)
-    {
-        $ids = Arr::pluck($subscriptions, 'subscription_code');
-
-        foreach ($ids as $id) {
-            $subscription = $collectable->fetchSubscription($id);
-
-            if ($subscription && data_get($subscription, 'plan.plan_code') === $plan) {
-                return $subscription;
-            }
-        }
-
-        return null;
     }
 }
