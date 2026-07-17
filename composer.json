@@ -41,7 +41,9 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Collector\\Tests\\": "tests"
+            "Collector\\Tests\\": "tests",
+            "Workbench\\App\\": "workbench/app/",
+            "Workbench\\Database\\": "workbench/database/"
         },
         "files": [
             "tests/helpers.php"

@@ -1,3 +1,4 @@
+import "../css/collector.css";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { createInertiaApp } from "@inertiajs/react";
@@ -21,7 +22,10 @@ const appName = import.meta.env.VITE_APP_NAME || "Collector PayStack";
 createInertiaApp({
   title: (title: string) => `${title} - ${appName}`,
   resolve: (name: string) => {
-    const pages = import.meta.glob("./Pages/**/*.tsx", { eager: true });
+    const pages = import.meta.glob(
+      ["./Pages/**/*.tsx", "!./Pages/**/*.test.tsx"],
+      { eager: true },
+    );
     return pages[`./Pages/${name}.tsx`] as any;
   },
   setup({ el, App, props }) {

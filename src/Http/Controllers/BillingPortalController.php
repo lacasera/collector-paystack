@@ -21,6 +21,12 @@ class BillingPortalController
 
         $collectable = $this->collectable($type, $id);
 
+        if ($request->has('reference')) {
+            PaymentVerified::dispatch($collectable, $request->get('reference'));
+
+            return redirect()->to($request->url());
+        }
+
         Inertia::setRootView('collector::app');
 
         View::share([
@@ -29,10 +35,6 @@ class BillingPortalController
         ]);
 
         Inertia::share(app(FrontendState::class)->current($type, $collectable));
-
-        if ($request->has('reference')) {
-            PaymentVerified::dispatch($collectable, $request->get('reference'));
-        }
 
         // Index.jsx ----> Subscribed (or user with a Subscription)
         // Plans.jsx ----> when user is not subscribe (or user wants to change Subscription)

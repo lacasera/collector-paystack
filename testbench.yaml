@@ -1,0 +1,15 @@
+providers:
+  - Collector\CollectorServiceProvider
+  - Workbench\App\Providers\WorkbenchServiceProvider
+
+migrations:
+  - workbench/database/migrations
+
+workbench:
+  start: '/e2e/login'
+  install: false
+  discovers:
+    web: true
+    api: false
+    commands: false
+    views: false

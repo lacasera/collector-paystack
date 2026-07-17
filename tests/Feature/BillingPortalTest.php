@@ -23,15 +23,16 @@ it('renders the plans page with the current subscribed plan', function () {
         ->assertJsonPath('props.subscribed', 'PLN_worid7k3e8v5afz');
 });
 
-it('dispatches PaymentVerified when a payment reference is present', function () {
-    fake_paystack();
+it('dispatches PaymentVerified then redirects to a reference-free url', function () {
     Event::fake([PaymentVerified::class]);
 
     $user = UserFactory::new()->withPaystackId()->create();
 
+    // A reference is handled once and then stripped, so reloading the callback
+    // URL cannot re-run payment verification.
     $this->actingAs($user)
-        ->get(route('collector.portal', ['reference' => 'REF_test123']), inertia_headers())
-        ->assertOk();
+        ->get(route('collector.portal', ['reference' => 'REF_test123']))
+        ->assertRedirect(route('collector.portal'));
 
     Event::assertDispatched(PaymentVerified::class, fn($event) => $event->reference === 'REF_test123');
 });

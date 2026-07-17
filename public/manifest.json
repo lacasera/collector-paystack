@@ -1,22 +1,8 @@
 {
-  "node_modules/magic-string/dist/magic-string.es.mjs": {
-    "file": "js/magic-string.es.js",
-    "name": "magic-string.es",
-    "src": "node_modules/magic-string/dist/magic-string.es.mjs",
-    "isDynamicEntry": true
-  },
-  "resources/css/collector.css": {
-    "file": "css/collector.css",
-    "src": "resources/css/collector.css",
-    "isEntry": true
-  },
   "resources/js/app.tsx": {
     "file": "js/app.js",
     "name": "app",
     "src": "resources/js/app.tsx",
-    "isEntry": true,
-    "dynamicImports": [
-      "node_modules/magic-string/dist/magic-string.es.mjs"
-    ]
+    "isEntry": true
   }
 }

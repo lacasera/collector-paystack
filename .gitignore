@@ -34,6 +34,10 @@ Thumbs.db
 /coverage
 /.phpunit.cache
 .phpunit.result.cache
+/test-results
+/playwright-report
+/playwright/.cache
+workbench/database/*.sqlite
 
 # Build tools
 /build
