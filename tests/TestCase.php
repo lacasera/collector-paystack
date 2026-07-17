@@ -4,7 +4,6 @@ namespace Collector\Tests;
 
 use Collector\CollectorManager;
 use Collector\CollectorServiceProvider;
-use Collector\Models\Subscription;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 abstract class TestCase extends Orchestra
@@ -13,10 +12,9 @@ abstract class TestCase extends Orchestra
     {
         parent::setUp();
 
-        // Point the package + subscription model at the package's test user so
-        // webhook resolution and Eloquent relationships resolve during tests.
+        // A single call configures both collectable resolution and the
+        // Subscription→owner relationship.
         CollectorManager::useCustomerModel(TestUser::class);
-        Subscription::useCustomerModel(TestUser::class);
     }
 
     protected function getPackageProviders($app): array

@@ -27,19 +27,30 @@ A modern Laravel package for managing subscription billing with PayStack integra
 
 ## Installation
 
-You can install the package via composer:
+Install the package via composer:
 
 ```bash
 composer require lacasera/collector-paystack
 ```
 
-Publish and run the migrations:
+Then run the interactive installer, which publishes the config and assets and
+runs the migrations:
 
 ```bash
-php artisan vendor:publish --tag="collector-config"
-php artisan vendor:publish --tag="collector-assets"
+php artisan collector:install
+```
+
+Prefer to do it by hand? The installer is equivalent to:
+
+```bash
+php artisan vendor:publish --tag="collector-config"   # config/collector.php
+php artisan vendor:publish --tag="collector-assets"   # public/vendor/collector
+php artisan vendor:publish --tag="collector-views"    # optional: resources/views/vendor/collector
 php artisan migrate
 ```
+
+> The migrations add billing columns to your `users` table (`paystack_id`,
+> `pm_type`, `trial_ends_at`, …) and create a `subscriptions` table.
 
 ## Configuration
 
@@ -101,61 +112,210 @@ class User extends Authenticatable
 
 ### 2. Access the Billing Portal
 
-The billing portal is automatically available at `/billing` (configurable). Users can:
+The billing portal is automatically available at `/collector/billing` (the
+`collector` prefix is fixed; the `billing` segment is configurable via
+`collector.path`). From the portal users can:
 
-- View current subscription details
-- Change subscription plans  
-- Update payment methods
-- View billing history
-- Cancel subscriptions
+- Browse the configured plans and toggle between monthly and yearly pricing
+- Subscribe to a plan (or switch plans)
+- Cancel their current subscription
 
-### 3. Create Subscriptions Programmatically
+### 3. Query Subscription State
+
+The `Collectable` trait and the `Subscription` model expose the state you need:
+
+```php
+$user = auth()->user();
+
+// Is the user subscribed at all?
+$user->subscribed();
+
+// Subscribed to a specific PayStack plan?  (Cashier's subscribedToPrice)
+$user->subscribedToPlan('PLN_basic_monthly');
+
+// Subscribed to any plan under a product (the plan-name group in config)?
+$user->subscribedToProduct('Basic');
+
+// The user's active subscription (or null)
+$subscription = $user->subscription();
+
+// Returns the matching Subscription (or null)
+$user->hasActivePlan('PLN_basic_monthly');
+
+// The user's current active plan code, and all subscriptions (most recent first)
+$user->currentActivePlan()?->paystack_plan;
+$user->subscriptions;
+
+// Inspecting a subscription
+$subscription?->isActive();
+$subscription?->onTrial();
+$subscription?->onGracePeriod();
+$subscription?->valid();      // active, on trial, or within grace period
+```
+
+### Customers & Payment Methods
+
+```php
+// Create / update the PayStack customer
+$user->createAsPayStackCustomer(['email' => $user->email]);
+$user->createOrGetPayStackCustomer();
+$user->updatePayStackCustomer(['first_name' => 'Ada']);
+$user->hasPayStackId();
+
+// Payment methods (from the PayStack customer's authorizations)
+$user->paymentMethods();
+$user->defaultPaymentMethod();   // the stored default card
+$user->hasPaymentMethod();
+
+// The in-app billing portal URL
+$url = $user->billingPortalUrl();
+```
+
+### 4. Start a Subscription
+
+Subscriptions are created through PayStack's hosted checkout. The billing portal
+does this for you when a user picks a plan, but you can also start the flow
+yourself with a fluent, Cashier-style builder. `checkout()` returns a redirect to
+PayStack:
+
+```php
+return $request->user()
+    ->newSubscription('default', 'PLN_basic_monthly')
+    ->trialDays(5)
+    ->checkout([
+        'success_url' => route('billing.success'),
+    ]);
+```
+
+- `success_url` maps to PayStack's `callback_url`; omit it to return to the
+  built-in billing portal, which verifies and records the payment automatically.
+- `trialDays()` records a trial period on the resulting subscription.
+- Starting a new subscription cancels the user's existing active subscription on
+  PayStack (plan switching).
+
+Need the raw URL instead of a redirect (e.g. for a JSON/API response)? Cast the
+result to a string:
+
+```php
+$url = (string) $user->newSubscription('default', 'PLN_basic_monthly')->checkout();
+```
+
+### 5. Cancel a Subscription
+
+```php
+$user->subscription()?->cancel('No longer needed');
+```
+
+Cancelling disables the subscription on PayStack and keeps it valid until the end
+of the current billing period (grace period).
+
+### 6. Handle Webhooks
+
+The package registers a webhook endpoint at **`POST /collector/webhooks`**. Add
+this URL to your PayStack dashboard (Settings → API Keys & Webhooks). When
+`PAYSTACK_SECRET_KEY` is set, every request is verified against PayStack's
+`x-paystack-signature` header before it is processed.
+
+Handled events: `subscription.create`, `subscription.not_renew`,
+`charge.success`, `invoice.create`, and `invoice.payment_failed`.
+
+## Events
+
+Collector dispatches events throughout the billing lifecycle so you can hook in
+your own logic (send receipts, provision access, notify Slack, …):
+
+| Event | Dispatched when |
+| --- | --- |
+| `Collector\Events\WebhookReceived` | Any signed PayStack webhook is received |
+| `Collector\Events\PaymentReceived` | A `charge.success` / failed-invoice webhook arrives |
+| `Collector\Events\InvoiceCreated` | An `invoice.create` webhook arrives |
+| `Collector\Events\PaymentVerified` | A user returns from checkout with a `reference` |
+| `Collector\Events\SubscriptionCanceled` | A subscription is cancelled |
+
+Listen for them as usual:
+
+```php
+use Collector\Events\SubscriptionCanceled;
+use Illuminate\Support\Facades\Event;
+
+Event::listen(SubscriptionCanceled::class, function (SubscriptionCanceled $event) {
+    // $event->collectable, $event->subscription
+});
+```
+
+## Authorization & Custom Resolution
+
+By default the billing portal resolves the collectable from the authenticated
+user and allows access to anyone signed in. Override either behaviour from a
+service provider:
+
+```php
+use App\Models\User;
+use Collector\Collector;
+use Illuminate\Http\Request;
+
+public function boot(): void
+{
+    // Resolve which model the portal manages
+    Collector::collectable(User::class)->resolve(fn (Request $request) => $request->user());
+
+    // Authorize who may view the portal
+    Collector::collectable(User::class)->authorize(
+        fn (User $collectable, Request $request) => $request->user()?->is($collectable)
+    );
+}
+```
+
+You can also change the portal path and its middleware in `config/collector.php`
+(`path` and `middleware`).
+
+### Custom Models
+
+If you extend the package's models, register them from a service provider (a
+single `useCustomerModel()` call configures both collectable resolution and the
+`Subscription → owner` relationship):
 
 ```php
 use Collector\Collector;
 
-$user = auth()->user();
-
-// Create a new subscription
-$subscription = $user->newSubscription('default', $planId)
-    ->trialDays(14)
-    ->create();
-
-// Check if user has an active subscription
-if ($user->subscribed()) {
-    // User has an active subscription
-}
-
-// Check for specific plan
-if ($user->hasActivePlan('PLN_basic_monthly')) {
-    // User is on the basic monthly plan
-}
+Collector::useCustomerModel(\App\Models\User::class);
+Collector::useSubscriptionModel(\App\Models\Subscription::class);
 ```
-
-### 4. Handle Webhooks
-
-The package automatically handles PayStack webhooks at `/collector/webhooks`. Make sure to configure this URL in your PayStack dashboard.
 
 ## Frontend Customization
 
-The package includes a React-based frontend built with:
+The package ships a **pre-built** React portal (React 18 + TypeScript + Tailwind +
+Inertia.js); the compiled assets are inlined into the portal page, so no build
+step is required to use it.
 
-- React 18
-- TypeScript
-- Tailwind CSS
-- Inertia.js
-
-To customize the frontend, publish the views and assets:
+To tweak the Blade shell, publish the views:
 
 ```bash
 php artisan vendor:publish --tag="collector-views"
-php artisan vendor:publish --tag="collector-assets"
+```
+
+To modify the React source, edit `resources/js` and rebuild the bundle:
+
+```bash
+npm install
+npm run build   # emits public/js/app.js and public/css/collector.css
 ```
 
 ## Testing
 
+PHP (Pest / Testbench):
+
 ```bash
-composer test
+composer test              # run the suite
+composer test-coverage     # with a coverage report
+```
+
+Frontend and end-to-end:
+
+```bash
+npm run type-check         # TypeScript
+npm run test               # Vitest component tests
+npm run test:e2e           # Playwright E2E against a served workbench app
 ```
 
 ### Code Style

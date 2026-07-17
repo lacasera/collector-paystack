@@ -2,41 +2,18 @@
 
 namespace Collector\Actions;
 
-use Collector\Collector;
 use Collector\Concerns\CreateSubscription;
-use Collector\Models\Subscription;
-use Collector\Plan;
 
 class CreateSubscriptions implements CreateSubscription
 {
+    /**
+     * Start a checkout for the plan and return the PayStack redirect URL.
+     *
+     * Delegates to the fluent subscription builder, which cancels any existing
+     * active subscription (plan switching) and initiates the hosted checkout.
+     */
     public function create($collectable, $plan, $options = [])
     {
-        $type = $collectable->collectorConfiguration('type');
-
-        /** @var Plan $paystackPlan */
-        $payStackPlan = Collector::plans($type)->where('id', $plan)->first();
-
-        $this->cancelExistingSubscriptions($collectable);
-
-        $customer = $collectable->createOrGetPayStackCustomer(['email' => $collectable->email]);
-
-        if (! $customer) {
-            return null;
-        }
-
-        return $collectable->initiateTransaction($customer, $payStackPlan->id);
-    }
-
-    /**
-     * Cancel the collectable's currently active subscriptions on PayStack before
-     * a new one is started, so switching plans does not leave the old plan
-     * billing in parallel.
-     */
-    protected function cancelExistingSubscriptions($collectable): void
-    {
-        $collectable->subscriptions()
-            ->where('paystack_status', Subscription::ACTIVE_STATUS)
-            ->get()
-            ->each(fn(Subscription $subscription) => $subscription->cancel());
+        return (string) $collectable->newSubscription('default', $plan)->checkout($options);
     }
 }

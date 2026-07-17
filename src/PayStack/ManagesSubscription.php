@@ -2,11 +2,58 @@
 
 namespace Collector\PayStack;
 
+use Collector\Collector;
 use Collector\Models\Subscription;
+use Collector\SubscriptionBuilder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 trait ManagesSubscription
 {
+    /**
+     * Begin creating a new subscription (Cashier-style fluent builder).
+     */
+    public function newSubscription(string $name, string $plan): SubscriptionBuilder
+    {
+        return new SubscriptionBuilder($this, $name, $plan);
+    }
+
+    /**
+     * Determine if the model has an active subscription (optionally by name).
+     */
+    public function subscribed(?string $name = null): bool
+    {
+        return ! is_null($this->subscription($name));
+    }
+
+    /**
+     * Determine if the model is actively subscribed to a given PayStack plan.
+     *
+     * The PayStack equivalent of Cashier's subscribedToPrice().
+     */
+    public function subscribedToPlan(string $plan): bool
+    {
+        return ! is_null($this->hasActivePlan($plan));
+    }
+
+    /**
+     * Determine if the model is actively subscribed to any plan configured
+     * under the given product (the `name` group in config/collector.php).
+     *
+     * The PayStack equivalent of Cashier's subscribedToProduct().
+     */
+    public function subscribedToProduct(string $product): bool
+    {
+        $planCodes = Collector::plans($this->collectorConfiguration('type'))
+            ->where('name', $product)
+            ->pluck('id')
+            ->all();
+
+        return $this->subscriptions
+            ->whereIn('paystack_plan', $planCodes)
+            ->where('paystack_status', Subscription::ACTIVE_STATUS)
+            ->isNotEmpty();
+    }
+
     /**
      * @return array|mixed|null
      */
@@ -24,14 +71,14 @@ trait ManagesSubscription
     /**
      * @return string|null
      */
-    public function initiateTransaction($customer, $plan)
+    public function initiateTransaction($customer, $plan, array $options = [])
     {
-        $response = $this->request->post('/transaction/initialize', [
+        $response = $this->request->post('/transaction/initialize', array_merge([
             'email' => $customer->email,
             'plan' => $plan,
             'callback_url' => route('collector.portal'),
             'amount' => 1000, // plan option will override this amount :)
-        ]);
+        ], $options));
 
         if (! $response->ok()) {
             return null;

@@ -2,6 +2,58 @@
 
 All notable changes to `collector-paystack` will be documented in this file.
 
+## Unreleased
+
+### Added
+- Laravel 13 and PHP 8.4 support (CI matrix + compatibility guard test)
+- Fluent, Cashier-style subscription builder:
+  `newSubscription($name, $plan)->trialDays(...)->checkout([...])`, returning a
+  `Checkout` you can return from a controller (redirect) or cast to a URL string
+- Cashier-parity helper methods on the collectable: `subscribed()`,
+  `subscribedToPlan()`, `subscribedToProduct()`, `createAsPayStackCustomer()`,
+  `updatePayStackCustomer()`, `paymentMethods()`, `defaultPaymentMethod()`,
+  `hasPaymentMethod()`, and `billingPortalUrl()`
+- Unified model configuration via `Collector::useCustomerModel()` and
+  `Collector::useSubscriptionModel()` (a single call configures both the
+  collectable and the `Subscription → owner` relationship)
+- Idempotent subscription sync and plan-switch cancellation of the existing
+  subscription
+- Custom collectable resolution via `Collector::collectable()->resolve(...)`
+- Full automated test suite: Pest feature/unit tests, Vitest React component
+  tests, and Playwright end-to-end tests driving the real billing portal
+- CI workflows for coverage (`pcov`, min gate), the frontend (type-check +
+  Vitest + build), and E2E (Playwright against a Testbench workbench app)
+
+### Fixed
+- **Security:** webhook signatures are now compared in constant time
+  (`hash_equals`); invalid signatures return `403`
+- Payment verification no longer re-runs when the checkout callback URL is
+  reloaded (Post/Redirect/Get)
+- The React portal now actually renders: the bundle is built as a single
+  self-contained IIFE so it can be inlined, and the compiled `public/js/app.js`
+  is shipped with the package (was gitignored)
+- `Subscription::isActive()` reads the correct `paystack_status` column
+- `completedTransaction()` correctly returns `null` for unsuccessful transactions
+- `subscription.create` no longer errors for existing customers; `not_renew`
+  looks subscriptions up by `paystack_id`
+- Migration rollback works on SQLite (drops the index before the column)
+- Corrected the billing portal CSS asset path
+
+### Changed
+- `ValidPlan` migrated from the deprecated `Rule` interface to `ValidationRule`
+- Extracted the duplicated webhook/listener subscription logic into a shared
+  action
+
+### Removed
+- Dead code: `SubscriptionBuilder`/`newSubscription()`, the empty
+  `CreateCustomer` action, `Subscription::swap()`, and unused config-builder
+  methods
+
+### Docs
+- Rewrote the README: accurate public API (the old `newSubscription()->create()`
+  and `subscribed()` examples never existed), `collector:install`, events,
+  authorization hooks, and webhook setup
+
 ## 2.2.0 - 2025-10-28
 
 ### Added

@@ -40,7 +40,6 @@ class WorkbenchServiceProvider extends ServiceProvider
         ]);
 
         CollectorManager::useCustomerModel(User::class);
-        Subscription::useCustomerModel(User::class);
 
         $this->fakePaystack();
         $this->registerE2ERoutes();

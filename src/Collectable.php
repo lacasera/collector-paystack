@@ -69,4 +69,16 @@ trait Collectable
             'user_id' => $this->id,
         ])->first();
     }
+
+    /**
+     * Get the URL of the billing portal for this model.
+     *
+     * PayStack has no hosted billing portal, so this returns the package's own
+     * portal route. The optional $return argument is accepted for Cashier API
+     * parity (the portal is in-app, so there is no external return URL).
+     */
+    public function billingPortalUrl(?string $return = null): string
+    {
+        return route('collector.portal');
+    }
 }

@@ -4,6 +4,7 @@ namespace Collector\PayStack;
 
 use Exception;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 
 trait ManagesCustomer
 {
@@ -22,6 +23,24 @@ trait ManagesCustomer
             return $this;
         }
 
+        return $this->createAsPayStackCustomer($options);
+    }
+
+    /**
+     * Create a PayStack customer for the given model.
+     *
+     * @return $this
+     */
+    public function createAsPayStackCustomer(array $options = [])
+    {
+        if (! array_key_exists('email', $options) && $email = $this->payStackEmail()) {
+            $options['email'] = $email;
+        }
+
+        if (! array_key_exists('phone', $options) && $phone = $this->payStackPhone()) {
+            $options['phone'] = $phone;
+        }
+
         $customer = $this->request->post('/customer', $options)->json('data');
 
         if ($customer) {
@@ -29,6 +48,32 @@ trait ManagesCustomer
         }
 
         return $this;
+    }
+
+    /**
+     * Update the underlying PayStack customer information for the model.
+     *
+     * @return array|null
+     */
+    public function updatePayStackCustomer(array $options = [])
+    {
+        if (! $this->hasPayStackId()) {
+            throw new Exception('user is not a paystack customer');
+        }
+
+        $response = $this->request->put("customer/$this->paystack_id", $options);
+
+        if (! $response->ok()) {
+            return null;
+        }
+
+        $customer = $response->json('data');
+
+        if ($customer) {
+            $this->fillUserPaymentDetails($customer);
+        }
+
+        return $customer;
     }
 
     /**
@@ -55,6 +100,52 @@ trait ManagesCustomer
     public function hasPayStackId()
     {
         return ! is_null($this->paystack_id);
+    }
+
+    /**
+     * Get the model's saved payment methods (PayStack authorizations).
+     *
+     * @return Collection
+     */
+    public function paymentMethods(?string $type = null)
+    {
+        if (! $this->hasPayStackId()) {
+            return collect();
+        }
+
+        $authorizations = collect(data_get($this->getAsPaystackCustomer(), 'authorizations', []));
+
+        if ($type) {
+            $authorizations = $authorizations->where('channel', $type);
+        }
+
+        return $authorizations->values();
+    }
+
+    /**
+     * Get the model's default payment method (as stored locally).
+     *
+     * @return object|null
+     */
+    public function defaultPaymentMethod()
+    {
+        if ($this->hasPaymentMethod()) {
+            return (object) [
+                'type' => $this->pm_type,
+                'last4' => $this->pm_last_four,
+                'expiration' => $this->pm_expiration,
+            ];
+        }
+
+        return $this->paymentMethods()->first();
+    }
+
+    /**
+     * Determine if the model has a default payment method.
+     */
+    public function hasPaymentMethod(): bool
+    {
+        return ! is_null($this->pm_type) || ! is_null($this->pm_last_four);
     }
 
     /**

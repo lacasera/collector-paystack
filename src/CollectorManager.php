@@ -2,6 +2,7 @@
 
 namespace Collector;
 
+use Collector\Models\Subscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
@@ -61,7 +62,10 @@ class CollectorManager
     }
 
     /**
-     * Set the customer model class name.
+     * Set the customer (collectable) model class name.
+     *
+     * A single call configures both webhook/collectable resolution and the
+     * Subscription→owner relationship.
      *
      * @param  string  $customerModel
      * @return void
@@ -69,6 +73,19 @@ class CollectorManager
     public static function useCustomerModel($customerModel)
     {
         static::$customerModel = $customerModel;
+
+        Subscription::useCustomerModel($customerModel);
+    }
+
+    /**
+     * Set the Subscription model class name.
+     *
+     * @param  string  $subscriptionModel
+     * @return void
+     */
+    public static function useSubscriptionModel($subscriptionModel)
+    {
+        Subscription::useSubscriptionModel($subscriptionModel);
     }
 
     public function isAuthorizedToViewBillingPortal($billable, Request $request)
