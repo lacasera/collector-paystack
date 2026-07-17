@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
+use Collector\Http\Middleware\HandleInertiaRequests;
 
 if (! function_exists('paystack_fixture')) {
     /**
@@ -82,6 +83,23 @@ if (! function_exists('paystack_webhook_headers')) {
     {
         return [
             'X-Paystack-Signature' => paystack_signature($body, $secret),
+        ];
+    }
+}
+
+if (! function_exists('inertia_headers')) {
+    /**
+     * Headers that make a request an Inertia XHR visit (JSON response, no root
+     * view render), with the collector middleware's asset version so the visit
+     * is not answered with a 409 version conflict.
+     */
+    function inertia_headers(): array
+    {
+        $version = (new HandleInertiaRequests())->version(request());
+
+        return [
+            'X-Inertia' => 'true',
+            'X-Inertia-Version' => $version,
         ];
     }
 }
