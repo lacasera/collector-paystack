@@ -131,13 +131,13 @@ class WorkbenchServiceProvider extends ServiceProvider
 
                 Auth::login($user);
 
-                return redirect('/collector/billing');
+                return redirect()->route('collector.portal');
             });
 
             // Stands in for PayStack's hosted checkout: bounce straight back to
             // the portal with a payment reference, as PayStack's callback would.
             Route::get('/e2e/paystack-checkout', function (Request $request) {
-                return redirect('/collector/billing?reference=' . $request->query('reference', 'REF_E2E'));
+                return redirect()->route('collector.portal', ['reference' => $request->query('reference', 'REF_E2E')]);
             });
 
             // Seed an active subscription directly (no ?reference on the portal
@@ -159,7 +159,7 @@ class WorkbenchServiceProvider extends ServiceProvider
                     ]
                 );
 
-                return redirect('/collector/billing');
+                return redirect()->route('collector.portal');
             });
 
             // Reset state between specs.

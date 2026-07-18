@@ -11,6 +11,19 @@ vi.mock('axios', () => ({
 }));
 vi.mock('@inertiajs/react', () => ({
     useForm: () => ({ data: { reason: '' }, setData: vi.fn(), reset: vi.fn(), errors: {} }),
+    // The subscribe/cancel URLs are shared from the server so they follow the
+    // configured route prefix — use a non-default one here to prove the
+    // component reads the prop rather than a baked-in path.
+    usePage: () => ({
+        props: {
+            collector: {
+                urls: {
+                    subscribe: '/account/subscription',
+                    cancel: '/account/subscription/cancel',
+                },
+            },
+        },
+    }),
 }));
 vi.mock('react-hot-toast', () => ({ default: { success: vi.fn() } }));
 
@@ -46,7 +59,7 @@ describe('Plan', () => {
 
         await userEvent.click(screen.getByRole('button', { name: /subscribe/i }));
 
-        expect(axios.post).toHaveBeenCalledWith('/collector/subscription', { plan: 1 });
+        expect(axios.post).toHaveBeenCalledWith('/account/subscription', { plan: 1 });
     });
 
     it('shows the current-plan cancel action instead of Subscribe when subscribed', () => {

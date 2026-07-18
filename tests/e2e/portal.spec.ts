@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { CLEAN_PORTAL_URL, PORTAL_URL } from './support/urls';
 
 test.beforeEach(async ({ page }) => {
     await page.goto('/e2e/reset');
     await page.goto('/e2e/login');
-    await expect(page).toHaveURL(/\/collector\/billing/);
+    await expect(page).toHaveURL(PORTAL_URL);
 });
 
 test('renders the billing portal with the configured plans', async ({ page }) => {
@@ -30,7 +31,7 @@ test('subscribing to a plan drives the checkout flow and marks it active', async
 
     // Bounces through the (stubbed) PayStack checkout, which processes the
     // reference and redirects back to the clean portal URL.
-    await page.waitForURL(/\/collector\/billing$/);
+    await page.waitForURL(CLEAN_PORTAL_URL);
 
     await expect(page.getByRole('button', { name: /current plan.*cancel/i })).toBeVisible();
 });

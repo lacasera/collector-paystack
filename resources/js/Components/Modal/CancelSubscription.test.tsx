@@ -4,6 +4,11 @@ import CancelSubscription from './CancelSubscription';
 
 vi.mock('@inertiajs/react', () => ({
     useForm: () => ({ data: { reason: '' }, setData: vi.fn(), reset: vi.fn(), errors: {} }),
+    // The cancel URL is shared from the server so it follows the configured
+    // route prefix — a non-default one here proves the prop is being read.
+    usePage: () => ({
+        props: { collector: { urls: { cancel: '/account/subscription/cancel' } } },
+    }),
 }));
 vi.mock('react-hot-toast', () => ({ default: { success: vi.fn() } }));
 

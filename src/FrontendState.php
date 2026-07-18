@@ -64,7 +64,9 @@ class FrontendState
 
         $money = new Money($amount, new Currency($currency));
 
-        $numberFormatter = new NumberFormatter('en', NumberFormatter::CURRENCY);
+        // Follow the application's locale so amounts are grouped and symbolised
+        // the way the rest of the host application formats numbers.
+        $numberFormatter = new NumberFormatter(app()->getLocale(), NumberFormatter::CURRENCY);
 
         $moneyFormatter = new IntlMoneyFormatter($numberFormatter, new ISOCurrencies());
 

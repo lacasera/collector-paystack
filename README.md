@@ -112,13 +112,46 @@ class User extends Authenticatable
 
 ### 2. Access the Billing Portal
 
-The billing portal is automatically available at `/collector/billing` (the
-`collector` prefix is fixed; the `billing` segment is configurable via
-`collector.path`). From the portal users can:
+The billing portal is automatically available at `/collector/billing`. From the
+portal users can:
 
 - Browse the configured plans and toggle between monthly and yearly pricing
 - Subscribe to a plan (or switch plans)
 - Cancel their current subscription
+
+#### Customising the portal URL
+
+The portal URI is built from `prefix` + `path`, and both are yours to change in
+`config/collector.php`:
+
+```php
+'domain' => env('COLLECTOR_DOMAIN'),        // null = your app's current domain
+'prefix' => env('COLLECTOR_PREFIX', 'collector'),
+'path'   => 'billing',
+```
+
+| Config | Portal URL |
+| --- | --- |
+| defaults | `/collector/billing` |
+| `'prefix' => 'account'` | `/account/billing` |
+| `'prefix' => 'account', 'path' => 'subscription'` | `/account/subscription` |
+| `'domain' => 'billing.example.com', 'prefix' => null` | `https://billing.example.com/billing` |
+
+The subscribe and cancel endpoints move with the prefix, and the billing portal
+frontend receives them as shared Inertia props — so nothing needs rebuilding
+when you change these values.
+
+Always link to the portal with the route name rather than a literal path, so
+your links follow the config:
+
+```php
+route('collector.portal');   // or: $user->billingPortalUrl()
+```
+
+> **The webhook URL does not move with the prefix.** It has its own
+> `webhook_path` setting, because PayStack learns that URL out-of-band from your
+> dashboard — relocating the portal must not silently break an endpoint PayStack
+> is already posting to. See [Handle Webhooks](#6-handle-webhooks).
 
 ### 3. Query Subscription State
 
@@ -215,6 +248,12 @@ The package registers a webhook endpoint at **`POST /collector/webhooks`**. Add
 this URL to your PayStack dashboard (Settings → API Keys & Webhooks). When
 `PAYSTACK_SECRET_KEY` is set, every request is verified against PayStack's
 `x-paystack-signature` header before it is processed.
+
+This path is set by `collector.webhook_path` and is deliberately independent of
+the portal's `prefix`, so moving the billing portal leaves the webhook where
+your PayStack dashboard expects it. If you do change `webhook_path`, update the
+URL in the dashboard at the same time or events will start 404ing. The endpoint
+is named, so you can always resolve it with `route('collector.webhook')`.
 
 Handled events: `subscription.create`, `subscription.not_renew`,
 `charge.success`, `invoice.create`, and `invoice.payment_failed`.

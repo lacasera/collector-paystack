@@ -1,5 +1,6 @@
 <?php
 
+use Collector\Tests\CustomRoutePathTestCase;
 use Collector\Tests\TestCase;
 
 /*
@@ -14,3 +15,10 @@ use Collector\Tests\TestCase;
 */
 
 uses(TestCase::class)->in('Feature', 'Unit');
+
+/*
+| The Routing suite boots the package with a relocated billing portal, which
+| has to be configured before the container boots — hence its own test case
+| and its own directory, since a suite may only bind one.
+*/
+uses(CustomRoutePathTestCase::class)->in('Routing');

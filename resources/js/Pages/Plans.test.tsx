@@ -8,6 +8,19 @@ vi.mock('@inertiajs/react', () => ({
     Head: () => null,
     Link: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     useForm: () => ({ data: { reason: '' }, setData: vi.fn(), reset: vi.fn(), errors: {} }),
+    // Subscribe/cancel URLs are shared from the server so they follow the
+    // configured route prefix — non-default ones here prove they are read.
+    usePage: () => ({
+        props: {
+            collector: {
+                appName: 'Acme Inc',
+                urls: {
+                    subscribe: '/account/subscription',
+                    cancel: '/account/subscription/cancel',
+                },
+            },
+        },
+    }),
 }));
 vi.mock('axios', () => ({ default: { post: vi.fn() } }));
 vi.mock('react-hot-toast', () => ({ default: { success: vi.fn() } }));
@@ -32,6 +45,12 @@ function renderPlans() {
 }
 
 describe('Plans page', () => {
+    it('shows the host application name in the header', () => {
+        renderPlans();
+
+        expect(screen.getByRole('heading', { name: 'Acme Inc' })).toBeInTheDocument();
+    });
+
     it('shows monthly plans by default', () => {
         renderPlans();
 

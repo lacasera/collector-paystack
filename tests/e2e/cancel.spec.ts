@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { CLEAN_PORTAL_URL } from './support/urls';
 
 test.beforeEach(async ({ page }) => {
     await page.goto('/e2e/reset');
@@ -7,7 +8,7 @@ test.beforeEach(async ({ page }) => {
     // Seed an active subscription and land on the portal with a clean URL
     // (no ?reference), so the post-cancel reload does not re-run verification.
     await page.goto('/e2e/subscribe');
-    await expect(page).toHaveURL(/\/collector\/billing$/);
+    await expect(page).toHaveURL(CLEAN_PORTAL_URL);
     await expect(page.getByRole('button', { name: /current plan.*cancel/i })).toBeVisible();
 });
 

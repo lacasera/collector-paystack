@@ -5,7 +5,7 @@ import DangerButton from '../Button/DangerButton'
 import TextInput from '../Input/TextInput';
 import InputLabel from '../Input/InputLabel';
 import InputError from '../Input/InputError';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import toast from 'react-hot-toast'
 
 interface CancelSubscriptionDetails {
@@ -32,12 +32,14 @@ export default function CancelSubscription({show, onCloseModal, details}: Cancel
         reason: '',
     });
 
+    const { collector } = usePage().props as any;
+
     const [processing, setProcessing] = React.useState<boolean>(false)
     const cancelSubscription = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         setProcessing(true)
-        const response = await window.axios.post('/collector/subscription/cancel', {
+        const response = await window.axios.post(collector.urls.cancel, {
             reason: data.reason
         })
 

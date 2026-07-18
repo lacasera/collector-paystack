@@ -171,7 +171,11 @@ trait ManagesCustomer
     {
         $authorization = Arr::first(data_get($paystackCustomer, 'authorizations'));
 
-        $this->fill([
+        // forceFill, not fill: these are the package's own columns, written from
+        // a trusted PayStack response rather than user input. The host's User
+        // model owns $fillable, and a restrictive one (the Laravel default)
+        // would otherwise discard every key here silently.
+        $this->forceFill([
             'paystack_id' => $paystackCustomer['customer_code'],
             'pm_type' => data_get($authorization, 'card_type'),
             'pm_last_four' => data_get($authorization, 'last4'),

@@ -30,9 +30,19 @@ class HandleInertiaRequests extends Middleware
     {
         return array_merge(parent::share($request), [
             'collector' => [
+                // The bundle is pre-built and shipped with the package, so a
+                // build-time value could never reflect the installing app —
+                // the name has to come from the server at request time.
+                'appName' => config('app.name'),
                 'flash' => [
                     'success' => fn() => $request->session()->pull('collector.flash.success'),
                     'error' => fn() => $request->session()->pull('collector.flash.error'),
+                ],
+                // Resolved from the named routes so the frontend follows the
+                // configured prefix instead of hard-coding "/collector".
+                'urls' => [
+                    'subscribe' => route('collector.new-subscription'),
+                    'cancel' => route('collector.cancel-subscription'),
                 ],
             ],
         ]);

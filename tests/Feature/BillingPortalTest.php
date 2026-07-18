@@ -43,7 +43,7 @@ it('requires authentication', function () {
 
 it('returns 404 for a collectable type with no configured model', function () {
     $this->actingAs(UserFactory::new()->create())
-        ->get('/collector/billing/nonexistent/1', inertia_headers())
+        ->get(route('collector.portal', ['type' => 'nonexistent', 'id' => 1]), inertia_headers())
         ->assertNotFound();
 });
 

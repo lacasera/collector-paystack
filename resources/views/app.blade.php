@@ -6,12 +6,12 @@
 
     <title>{{ config('app.name', 'Laravel') }} Billing Portal</title>
 
+    {{-- Read by the pre-built bundle, which cannot know the app name at build time. --}}
+    <meta name="collector-app-name" content="{{ config('app.name', 'Laravel') }}" />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
+
     <!-- Fonts -->
     <link href="https://fonts.bunny.net/css?family=Nunito:400,600,700" rel="stylesheet">
-
-    <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js" integrity="sha512-rmZcZsyhe0/MAjquhTgiUcb4d9knaFc7b5xAfju483gbEXTkeJRUMIPk6s3ySZMYUHEcjKbjLjyddGWMrNEvZg==" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.20/lodash.min.js" integrity="sha512-90vH1Z83AJY9DmlWa8WkjkV79yfS2n2Oxhsi2dZbIv0nC4E6m5AbH8Nh156kkM7JePmqD6tcZsfad1ueoaovww==" crossorigin="anonymous"></script>
 
     <!-- Styles -->
     <style>
@@ -28,14 +28,11 @@
     @inertiaHead
 </head>
 
-@inertiaHead
-
 <body class="font-sans antialiased">
 @inertia
 
 <!-- Scripts -->
 <script>
-    //window.translations = <?php //echo $translations; ?>;
     {!! file_get_contents($jsPath) !!}
 </script>
 </body>

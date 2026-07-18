@@ -48,5 +48,6 @@ it('registers the collector routes on the running laravel version', function () 
 
     expect($names)->toContain('collector.portal')
         ->toContain('collector.new-subscription')
-        ->toContain('collector.cancel-subscription');
+        ->toContain('collector.cancel-subscription')
+        ->toContain('collector.webhook');
 });

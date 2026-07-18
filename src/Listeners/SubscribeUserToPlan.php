@@ -22,11 +22,24 @@ class SubscribeUserToPlan
             return;
         }
 
-        $collectable->fill([
-            'pm_type' => data_get($transaction, 'authorization.card_type'),
-            'pm_last_four' => data_get($transaction, 'authorization.last4'),
-            'pm_expiration' => data_get($transaction, 'authorization.exp_month') . '/' . data_get($transaction, 'authorization.exp_year'),
-        ])->save();
+       
+        $attributes = [];
+
+        // Without the customer code hasPayStackId() stays false and
+        // SyncSubscription bails, so the subscription is never recorded.
+        if (! $collectable->hasPayStackId() && $customerCode = data_get($transaction, 'customer.customer_code')) {
+            $attributes['paystack_id'] = $customerCode;
+        }
+
+        if ($authorization = data_get($transaction, 'authorization')) {
+            $attributes['pm_type'] = data_get($authorization, 'card_type');
+            $attributes['pm_last_four'] = data_get($authorization, 'last4');
+            $attributes['pm_expiration'] = data_get($authorization, 'exp_month') . '/' . data_get($authorization, 'exp_year');
+        }
+
+        if ($attributes) {
+            $collectable->forceFill($attributes)->save();
+        }
 
         $subscription = $this->syncSubscription->sync($collectable, data_get($transaction, 'plan_object.plan_code'));
 

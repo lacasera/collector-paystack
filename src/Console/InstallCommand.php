@@ -52,7 +52,7 @@ class InstallCommand extends Command
         $this->info('📋 Next steps:');
         $this->line('1. Add your PayStack credentials to your .env file:');
         $this->line('   PAYSTACK_SECRET_KEY=your_secret_key');
-        $this->line('   COLLECTOR_CURRENCY=NGN');
+        $this->line('   COLLECTOR_CURRENCY=' . config('collector.currency'));
         $this->newLine();
         $this->line('2. Add the Collectable trait to your User model:');
         $this->line('   use Collector\Collectable;');
@@ -60,8 +60,8 @@ class InstallCommand extends Command
         $this->line('3. Configure your subscription plans in config/collector.php');
         $this->newLine();
         $this->line('4. Set up your PayStack webhook URL in your PayStack dashboard:');
-        $this->line('   ' . url('/collector/webhooks'));
+        $this->line('   ' . route('collector.webhook'));
         $this->newLine();
-        $this->line('5. Visit the billing portal at: ' . url('/collector/billing'));
+        $this->line('5. Visit the billing portal at: ' . route('collector.portal'));
     }
 }

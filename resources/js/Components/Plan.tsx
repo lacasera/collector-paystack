@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { usePage } from '@inertiajs/react';
 import PrimaryButton from './Button/PrimaryButton';
 import CancelSubscription from './Modal/CancelSubscription';
 import TealButton from './Button/TealButton';
 import Feature from './Feature';
 
-const subscribeToPlan = async (planId: number) => {
+const subscribeToPlan = async (url: string, planId: number) => {
     try {
-        const { data } = await axios.post<{ redirect?: string }>('/collector/subscription', {
+        const { data } = await axios.post<{ redirect?: string }>(url, {
             plan: planId
         });
 
@@ -22,6 +23,7 @@ const subscribeToPlan = async (planId: number) => {
 export default function Plan(props: { cancelation?: any; plan?: any; currentPlan?: any; }) {
     const [showCancelModel, setShowCancelModel] = useState(false);
     const { plan, currentPlan } = props;
+    const { collector } = usePage().props as any;
 
     const hasPlan = () => plan.id === currentPlan;
 
@@ -62,7 +64,7 @@ export default function Plan(props: { cancelation?: any; plan?: any; currentPlan
                             (Current Plan) Cancel
                         </TealButton>
                     ) : (
-                        <PrimaryButton onClick={() => subscribeToPlan(plan.id)}>
+                        <PrimaryButton onClick={() => subscribeToPlan(collector.urls.subscribe, plan.id)}>
                             Subscribe
                         </PrimaryButton>
                     )}

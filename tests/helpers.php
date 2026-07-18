@@ -117,7 +117,7 @@ if (! function_exists('post_webhook')) {
 
         $signature ??= paystack_signature($body);
 
-        return test()->call('POST', '/collector/webhooks', [], [], [], [
+        return test()->call('POST', route('collector.webhook'), [], [], [], [
             'HTTP_X_PAYSTACK_SIGNATURE' => $signature,
             'CONTENT_TYPE' => 'application/json',
         ], $body);

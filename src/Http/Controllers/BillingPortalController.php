@@ -24,6 +24,7 @@ class BillingPortalController
         if ($request->has('reference')) {
             PaymentVerified::dispatch($collectable, $request->get('reference'));
 
+            // Strip the reference so a reload cannot re-run verification.
             return redirect()->to($request->url());
         }
 
@@ -36,8 +37,6 @@ class BillingPortalController
 
         Inertia::share(app(FrontendState::class)->current($type, $collectable));
 
-        // Index.jsx ----> Subscribed (or user with a Subscription)
-        // Plans.jsx ----> when user is not subscribe (or user wants to change Subscription)
         return Inertia::render('Plans', [
             'subscribed' => $collectable->currentActivePlan()?->paystack_plan,
         ]);
