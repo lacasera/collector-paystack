@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { CLEAN_PORTAL_URL, PORTAL_URL } from './support/urls';
+import { CHANGE_PLAN_PATH, MANAGE_URL, PORTAL_PATH, PORTAL_URL } from './support/urls';
 
 test.beforeEach(async ({ page }) => {
     await page.goto('/e2e/reset');
@@ -30,8 +30,37 @@ test('subscribing to a plan drives the checkout flow and marks it active', async
     await page.getByRole('button', { name: 'Subscribe' }).first().click();
 
     // Bounces through the (stubbed) PayStack checkout, which processes the
-    // reference and redirects back to the clean portal URL.
-    await page.waitForURL(CLEAN_PORTAL_URL);
+    // reference, strips it, and — now that the customer is subscribed — hands
+    // them on to the management portal.
+    await page.waitForURL(MANAGE_URL);
 
-    await expect(page.getByRole('button', { name: /current plan.*cancel/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /change plan/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^cancel subscription$/i })).toBeVisible();
+});
+
+test('forwards a subscriber from the plans page to the management portal', async ({ page }) => {
+    await page.goto('/e2e/subscribe');
+
+    await page.goto(PORTAL_PATH);
+
+    await expect(page).toHaveURL(MANAGE_URL);
+});
+
+test('lets a subscriber back to the plans page to switch plans', async ({ page }) => {
+    await page.goto('/e2e/subscribe');
+
+    await page.getByRole('button', { name: /change plan/i }).click();
+
+    // Must NOT bounce back to the management portal.
+    await expect(page).toHaveURL(new RegExp(`${PORTAL_PATH.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\?change=1$`));
+    await expect(page.getByRole('button', { name: 'Subscribe' }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: /manage plan/i })).toBeVisible();
+});
+
+test('the change-plan link is reachable directly', async ({ page }) => {
+    await page.goto('/e2e/subscribe');
+
+    await page.goto(CHANGE_PLAN_PATH);
+
+    await expect(page.getByRole('heading', { name: 'Standard' })).toBeVisible();
 });

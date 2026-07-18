@@ -4,28 +4,24 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import axios from 'axios';
 import Plan from './Plan';
 
-// Plan always mounts the CancelSubscription modal, which uses Inertia's useForm
-// and react-hot-toast even while hidden — stub those out.
 vi.mock('axios', () => ({
     default: { post: vi.fn() },
 }));
 vi.mock('@inertiajs/react', () => ({
-    useForm: () => ({ data: { reason: '' }, setData: vi.fn(), reset: vi.fn(), errors: {} }),
-    // The subscribe/cancel URLs are shared from the server so they follow the
-    // configured route prefix — use a non-default one here to prove the
-    // component reads the prop rather than a baked-in path.
+    // The URLs are shared from the server so they follow the configured route
+    // prefix — non-default ones here prove the component reads the prop rather
+    // than a baked-in path.
     usePage: () => ({
         props: {
             collector: {
                 urls: {
                     subscribe: '/account/subscription',
-                    cancel: '/account/subscription/cancel',
+                    manage: '/account/billing/manage',
                 },
             },
         },
     }),
 }));
-vi.mock('react-hot-toast', () => ({ default: { success: vi.fn() } }));
 
 const plan = {
     id: 1,
@@ -43,7 +39,7 @@ describe('Plan', () => {
     });
 
     it('renders the plan name, price, description and features', () => {
-        render(<Plan plan={plan} currentPlan={null} cancelation={{}} />);
+        render(<Plan plan={plan} currentPlan={null} />);
 
         expect(screen.getByText('Basic')).toBeInTheDocument();
         expect(screen.getByText(/5,000/)).toBeInTheDocument();
@@ -55,17 +51,26 @@ describe('Plan', () => {
     it('shows a Subscribe button and posts to the subscription endpoint on click', async () => {
         (axios.post as ReturnType<typeof vi.fn>).mockResolvedValue({ data: {} });
 
-        render(<Plan plan={plan} currentPlan={null} cancelation={{}} />);
+        render(<Plan plan={plan} currentPlan={null} />);
 
         await userEvent.click(screen.getByRole('button', { name: /subscribe/i }));
 
         expect(axios.post).toHaveBeenCalledWith('/account/subscription', { plan: 1 });
     });
 
-    it('shows the current-plan cancel action instead of Subscribe when subscribed', () => {
-        render(<Plan plan={plan} currentPlan={1} cancelation={{}} />);
+    it('links the current plan to the management page instead of offering Subscribe', () => {
+        render(<Plan plan={plan} currentPlan={1} />);
 
-        expect(screen.getByRole('button', { name: /current plan.*cancel/i })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: /manage plan/i }))
+            .toHaveAttribute('href', '/account/billing/manage');
         expect(screen.queryByRole('button', { name: /^subscribe$/i })).not.toBeInTheDocument();
+    });
+
+    it('does not offer cancellation from the plan card', () => {
+        // Cancelling belongs on the management page; the card must not mount
+        // a cancel modal (it previously did so on every card).
+        render(<Plan plan={plan} currentPlan={1} />);
+
+        expect(screen.queryByRole('button', { name: /cancel/i })).not.toBeInTheDocument();
     });
 });

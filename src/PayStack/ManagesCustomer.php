@@ -8,6 +8,18 @@ use Illuminate\Support\Collection;
 
 trait ManagesCustomer
 {
+    /**
+     * The PayStack customer payload, cached for the life of this instance.
+     *
+     * Rendering the billing portal asks for the customer three times over
+     * (subscription sync, transaction history, payment methods); without this
+     * each one is a separate blocking round-trip for an identical response.
+     */
+    protected ?array $payStackCustomer = null;
+
+    /** The paystack_id $payStackCustomer was fetched for. */
+    protected ?string $payStackCustomerFor = null;
+
     public function createOrGetPayStackCustomer(array $options = [])
     {
 
@@ -85,13 +97,32 @@ trait ManagesCustomer
             throw new Exception('user is not a paystack customer');
         }
 
+        // Keyed on the id it was fetched for, so becoming a different PayStack
+        // customer mid-request cannot serve the previous one's data.
+        if ($this->payStackCustomerFor === $this->paystack_id && ! is_null($this->payStackCustomer)) {
+            return $this->payStackCustomer;
+        }
+
         $response = $this->request->get("customer/$this->paystack_id");
 
         if (! $response->ok()) {
             return null;
         }
 
-        return $response->json('data');
+        $this->payStackCustomerFor = $this->paystack_id;
+
+        return $this->payStackCustomer = $response->json('data');
+    }
+
+    /**
+     * Drop the cached customer payload so the next read re-fetches it.
+     *
+     * Call after anything that changes the customer on PayStack's side.
+     */
+    public function forgetPayStackCustomer(): void
+    {
+        $this->payStackCustomer = null;
+        $this->payStackCustomerFor = null;
     }
 
     /**
@@ -181,5 +212,10 @@ trait ManagesCustomer
             'pm_last_four' => data_get($authorization, 'last4'),
             'pm_expiration' => data_get($authorization, 'exp_month') . '/' . data_get($authorization, 'exp_year'),
         ])->save();
+
+        // This payload is fresher than anything cached, and the customer may
+        // have changed identity entirely.
+        $this->payStackCustomer = $paystackCustomer;
+        $this->payStackCustomerFor = $this->paystack_id;
     }
 }

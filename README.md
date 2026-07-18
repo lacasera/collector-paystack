@@ -151,9 +151,77 @@ route('collector.portal');   // or: $user->billingPortalUrl()
 > **The webhook URL does not move with the prefix.** It has its own
 > `webhook_path` setting, because PayStack learns that URL out-of-band from your
 > dashboard — relocating the portal must not silently break an endpoint PayStack
-> is already posting to. See [Handle Webhooks](#6-handle-webhooks).
+> is already posting to. See [Handle Webhooks](#7-handle-webhooks).
 
-### 3. Query Subscription State
+### 3. The Subscription Management Portal
+
+Subscribed customers can manage their billing at **`/collector/billing/manage`**
+(`route('collector.manage')`), a tabbed page covering:
+
+- **Overview** — current plan, amount, next billing date, trial and grace-period
+  state, with actions to change plan or cancel
+- **Payment History** — every PayStack transaction, paginated
+- **Payment Methods** — stored cards, de-duplicated (PayStack records one
+  authorization per transaction, so one card can appear many times)
+- **Subscriptions** — the full subscription history, active and past
+
+The portal reconciles with PayStack on load, so subscriptions started or
+cancelled outside your application still show up.
+
+#### Linking to a section
+
+The open section lives in the URL, so a reload keeps its place and you can send
+customers straight where they need to go:
+
+```php
+route('collector.manage');                              // overview
+route('collector.manage', ['section' => 'history']);    // payment history
+route('collector.manage', ['section' => 'methods']);    // payment methods
+route('collector.manage', ['section' => 'subscriptions']);
+
+// e.g. after a failed charge, drop them on their card:
+return redirect()->route('collector.manage', ['section' => 'methods'])
+    ->with('error', 'Your card was declined.');
+```
+
+Valid sections are `overview`, `history`, `methods` and `subscriptions`; an
+unrecognised value falls back to the overview rather than erroring, so a stale
+bookmark still lands somewhere useful. Switching section in the browser updates
+the URL without refetching, and the back button moves between sections.
+
+#### How the two pages relate
+
+```
+/collector/billing              -> forwards subscribers to the management page
+/collector/billing?change=1     -> the plan grid, for switching plans
+/collector/billing/manage       -> the management page
+```
+
+A customer with an active subscription who visits the plans page is forwarded to
+the management page — there is no point showing a plan grid to someone who
+already has a plan. "Change plan" sends them back with `?change=1`, which is the
+flag that suppresses the forward; without it the button would bounce straight
+back and appear to do nothing.
+
+Cancelling lives only on the management page. A cancelled subscription stays
+visible there for the rest of its grace period, showing the date access ends,
+rather than disappearing the moment it is cancelled.
+
+#### What PayStack can and cannot do
+
+PayStack's API differs from Stripe's in two ways that shape this page:
+
+| Action | How it works here |
+| --- | --- |
+| Change plan | PayStack has **no** endpoint to move a subscription to another plan. "Change plan" cancels the current subscription and starts a new checkout. |
+| Update card | PayStack has **no** card-replacement API. The portal mints a short-lived link to PayStack's own hosted page, so card details never touch your application. |
+
+Because plan changes are cancel-then-resubscribe, the package cancels any
+active subscription before starting a new checkout — reconciling with PayStack
+first, so a subscription missing from your local table cannot survive the switch
+and keep billing alongside its replacement.
+
+### 4. Query Subscription State
 
 The `Collectable` trait and the `Subscription` model expose the state you need:
 
@@ -204,7 +272,7 @@ $user->hasPaymentMethod();
 $url = $user->billingPortalUrl();
 ```
 
-### 4. Start a Subscription
+### 5. Start a Subscription
 
 Subscriptions are created through PayStack's hosted checkout. The billing portal
 does this for you when a user picks a plan, but you can also start the flow
@@ -233,7 +301,7 @@ result to a string:
 $url = (string) $user->newSubscription('default', 'PLN_basic_monthly')->checkout();
 ```
 
-### 5. Cancel a Subscription
+### 6. Cancel a Subscription
 
 ```php
 $user->subscription()?->cancel('No longer needed');
@@ -242,7 +310,7 @@ $user->subscription()?->cancel('No longer needed');
 Cancelling disables the subscription on PayStack and keeps it valid until the end
 of the current billing period (grace period).
 
-### 6. Handle Webhooks
+### 7. Handle Webhooks
 
 The package registers a webhook endpoint at **`POST /collector/webhooks`**. Add
 this URL to your PayStack dashboard (Settings → API Keys & Webhooks). When

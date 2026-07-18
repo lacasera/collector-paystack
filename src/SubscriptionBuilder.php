@@ -56,6 +56,14 @@ class SubscriptionBuilder
      */
     public function checkout(array $options = []): Checkout
     {
+        // Reconcile first: PayStack has no plan-change endpoint, so switching
+        // plans means cancelling the old subscription and starting a new one.
+        // A subscription missing from the local table would survive that
+        // cancellation and keep billing alongside its replacement.
+        if ($this->owner->hasPayStackId()) {
+            $this->owner->syncSubscriptions();
+        }
+
         $this->owner->subscriptions()
             ->where('paystack_status', Subscription::ACTIVE_STATUS)
             ->get()

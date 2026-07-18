@@ -17,3 +17,14 @@ export const PORTAL_URL = new RegExp(escaped);
 
 /** Matches the portal path at the end of the URL — i.e. no query string. */
 export const CLEAN_PORTAL_URL = new RegExp(`${escaped}$`);
+
+/** The management portal, which hangs off the portal path. */
+export const MANAGE_PATH = `${PORTAL_PATH}/manage`;
+
+export const MANAGE_URL = new RegExp(`${escaped}/manage$`);
+
+/**
+ * The plans page reached from the management portal. Subscribers are forwarded
+ * to the management portal unless this flag is present.
+ */
+export const CHANGE_PLAN_PATH = `${PORTAL_PATH}?change=1`;

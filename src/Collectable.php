@@ -6,6 +6,7 @@ use Collector\Models\Subscription;
 use Collector\PayStack\ManagesCustomer;
 use Collector\PayStack\ManagesPlans;
 use Collector\PayStack\ManagesSubscription;
+use Collector\PayStack\ManagesTransactions;
 use Collector\PayStack\PrepareRequest;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Client\PendingRequest;
@@ -15,6 +16,7 @@ trait Collectable
     use ManagesCustomer;
     use ManagesPlans;
     use ManagesSubscription;
+    use ManagesTransactions;
     use PayStack;
 
     protected PendingRequest $request;
@@ -64,10 +66,33 @@ trait Collectable
 
     public function currentActivePlan(): ?Subscription
     {
+        // Ordered so the result is stable: an unordered first() returns an
+        // arbitrary row whenever more than one subscription is active, which
+        // makes the portal highlight an unpredictable plan.
         return Subscription::$subscriptionModel::where([
             'paystack_status' => Subscription::ACTIVE_STATUS,
             'user_id' => $this->id,
-        ])->first();
+        ])->latest('id')->first();
+    }
+
+    /**
+     * The subscription the billing portal should display.
+     *
+     * Broader than currentActivePlan(): a cancelled subscription still inside
+     * its grace period is no longer "active", but the customer keeps access
+     * until it ends and needs to see that — otherwise cancelling appears to
+     * erase the subscription immediately.
+     */
+    public function currentSubscription(): ?Subscription
+    {
+        // An active subscription always wins. Falling back only when there is
+        // none avoids an older cancelled-but-not-yet-expired subscription
+        // shadowing the plan the customer is actually paying for.
+        return $this->currentActivePlan() ?? Subscription::$subscriptionModel::where('user_id', $this->id)
+            ->whereNotNull('ends_at')
+            ->where('ends_at', '>', now())
+            ->latest('id')
+            ->first();
     }
 
     /**

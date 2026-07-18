@@ -33,7 +33,9 @@ it('shares the relocated endpoints with the frontend', function () {
         ->assertJsonPath('props.collector.urls.subscribe', url('/account/subscription'))
         ->assertJsonPath('props.collector.urls.cancel', url('/account/subscription/cancel'))
         // Shipped pre-built, so the bundle cannot know the host app's name.
-        ->assertJsonPath('props.collector.appName', config('app.name'));
+        ->assertJsonPath('props.collector.appName', config('app.name'))
+        // The header links out of the portal to the host app's own home page.
+        ->assertJsonPath('props.collector.urls.home', url('/'));
 });
 
 it('leaves the webhook where paystack already knows to find it', function () {

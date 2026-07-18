@@ -24,8 +24,19 @@ class BillingPortalController
         if ($request->has('reference')) {
             PaymentVerified::dispatch($collectable, $request->get('reference'));
 
+            // The listener runs synchronously, so the subscription it records is
+            // already visible — which is what makes this the first honest point
+            // to report the outcome to the customer.
+            session($collectable->fresh()?->currentActivePlan()
+                ? ['collector.flash.success' => 'Your subscription is now active.']
+                : ['collector.flash.error' => 'We could not confirm that payment. Please try again.']);
+
             // Strip the reference so a reload cannot re-run verification.
             return redirect()->to($request->url());
+        }
+
+        if (! $request->boolean('change') && $collectable->currentActivePlan()) {
+            return redirect()->route('collector.manage');
         }
 
         Inertia::setRootView('collector::app');

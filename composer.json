@@ -1,11 +1,21 @@
 {
     "name": "lacasera/collector-paystack",
-    "description": "An implementation of multiple payment platforms ",
+    "description": "Subscription billing for Laravel with PayStack: a hosted-style billing portal, plan switching, webhooks and a Cashier-like API.",
     "keywords": [
-        "lacasera",
-        "collector-paystack"
+        "laravel",
+        "paystack",
+        "subscriptions",
+        "billing",
+        "payments",
+        "recurring-payments",
+        "cashier",
+        "lacasera"
     ],
     "homepage": "https://github.com/lacasera/collector-paystack",
+    "support": {
+        "issues": "https://github.com/lacasera/collector-paystack/issues",
+        "source": "https://github.com/lacasera/collector-paystack"
+    },
     "license": "MIT",
     "type": "library",
     "authors": [
@@ -53,7 +63,6 @@
         "test": "vendor/bin/pest",
         "test-coverage": "vendor/bin/pest --coverage",
         "pint": "./vendor/bin/pint --dirty"
-
     },
     "config": {
         "sort-packages": true,
@@ -68,6 +77,6 @@
             ]
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true
 }

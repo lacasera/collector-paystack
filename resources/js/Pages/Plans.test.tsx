@@ -3,27 +3,28 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import Plans from './Plans';
 
-// Stub Inertia primitives used by the page/layout and the nested modal.
+// Stub Inertia primitives used by the page and layout.
 vi.mock('@inertiajs/react', () => ({
     Head: () => null,
     Link: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-    useForm: () => ({ data: { reason: '' }, setData: vi.fn(), reset: vi.fn(), errors: {} }),
-    // Subscribe/cancel URLs are shared from the server so they follow the
-    // configured route prefix — non-default ones here prove they are read.
+    // The URLs are shared from the server so they follow the configured route
+    // prefix — non-default ones here prove they are read.
     usePage: () => ({
         props: {
             collector: {
                 appName: 'Acme Inc',
                 urls: {
+                    home: 'http://localhost',
                     subscribe: '/account/subscription',
-                    cancel: '/account/subscription/cancel',
+                    portal: '/account/billing',
+                    manage: '/account/billing/manage',
+                    changePlan: '/account/billing?change=1',
                 },
             },
         },
     }),
 }));
 vi.mock('axios', () => ({ default: { post: vi.fn() } }));
-vi.mock('react-hot-toast', () => ({ default: { success: vi.fn() } }));
 
 const monthlyPlans = [
     { id: 'm1', name: 'Monthly Basic', price: '₦5,000', interval: 'monthly', features: [] },
@@ -32,14 +33,13 @@ const yearlyPlans = [
     { id: 'y1', name: 'Yearly Basic', price: '₦54,000', interval: 'yearly', features: [] },
 ];
 
-function renderPlans() {
+function renderPlans(subscribed: string | null = null) {
     return render(
         <Plans
             collectable={{ email: 'ada@example.com' }}
             monthlyPlans={monthlyPlans as never}
             yearlyPlans={yearlyPlans as never}
-            subscribed={null}
-            cancelation={false}
+            subscribed={subscribed}
         />,
     );
 }
@@ -49,6 +49,24 @@ describe('Plans page', () => {
         renderPlans();
 
         expect(screen.getByRole('heading', { name: 'Acme Inc' })).toBeInTheDocument();
+    });
+
+    it('offers a way back to the subscription only once subscribed', () => {
+        renderPlans();
+
+        expect(screen.queryByRole('link', { name: /back to your subscription/i })).not.toBeInTheDocument();
+
+        renderPlans('m1');
+
+        expect(screen.getByRole('link', { name: /back to your subscription/i }))
+            .toHaveAttribute('href', '/account/billing/manage');
+    });
+
+    it('reads as a plan switcher rather than an onboarding page when subscribed', () => {
+        renderPlans('m1');
+
+        expect(screen.getByText(/choose the plan you would like to switch to/i)).toBeInTheDocument();
+        expect(screen.queryByText(/to get started/i)).not.toBeInTheDocument();
     });
 
     it('shows monthly plans by default', () => {

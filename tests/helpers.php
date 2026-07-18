@@ -32,10 +32,26 @@ if (! function_exists('fake_paystack')) {
      */
     function fake_paystack(array $overrides = []): void
     {
+        // Ordering matters: Http::fake returns the first pattern that matches,
+        // so narrower URLs must be listed before the broader ones.
         Http::fake(array_merge([
             'https://api.paystack.co/customer*' => Http::response([
                 'status' => true,
                 'data' => paystack_fixture('customer'),
+            ]),
+            'https://api.paystack.co/subscription/*/manage/link' => Http::response([
+                'status' => true,
+                'data' => ['link' => 'https://paystack.com/manage/subscriptions/test123?subscription_token=tok'],
+            ]),
+            'https://api.paystack.co/subscription?*' => Http::response([
+                'status' => true,
+                'data' => [],
+                'meta' => ['total' => 0, 'perPage' => 100, 'page' => 1, 'pageCount' => 1],
+            ]),
+            'https://api.paystack.co/transaction?*' => Http::response([
+                'status' => true,
+                'data' => [paystack_fixture('transaction-verify')],
+                'meta' => ['total' => 1, 'perPage' => 20, 'page' => 1, 'pageCount' => 1],
             ]),
             'https://api.paystack.co/plan*' => Http::response([
                 'status' => true,

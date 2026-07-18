@@ -159,7 +159,9 @@ class WorkbenchServiceProvider extends ServiceProvider
                     ]
                 );
 
-                return redirect()->route('collector.portal');
+                // Straight to the management portal: the plans page would only
+                // forward an active subscriber here anyway.
+                return redirect()->route('collector.manage');
             });
 
             // Reset state between specs.

@@ -3,12 +3,6 @@
 namespace Collector;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
-use Money\Currencies\ISOCurrencies;
-use Money\Currency;
-use Money\Formatter\IntlMoneyFormatter;
-use Money\Money;
-use NumberFormatter;
 
 class FrontendState
 {
@@ -40,36 +34,11 @@ class FrontendState
 
             $plan->rawPrice = $paystackPrice['amount'];
 
-            $price = $this->formatAmount($paystackPrice['amount']);
-
-            if (Str::endsWith($price, '.00')) {
-                $price = substr($price, 0, -3);
-            }
-
-            if (Str::endsWith($price, '.0')) {
-                $price = substr($price, 0, -2);
-            }
-
-            $plan->price = $price;
+            $plan->price = MoneyFormatter::format($paystackPrice['amount']);
 
             $plan->currency = config('collector.currency');
 
             return $plan;
         });
-    }
-
-    private function formatAmount($amount)
-    {
-        $currency = strtoupper(config('collector.currency'));
-
-        $money = new Money($amount, new Currency($currency));
-
-        // Follow the application's locale so amounts are grouped and symbolised
-        // the way the rest of the host application formats numbers.
-        $numberFormatter = new NumberFormatter(app()->getLocale(), NumberFormatter::CURRENCY);
-
-        $moneyFormatter = new IntlMoneyFormatter($numberFormatter, new ISOCurrencies());
-
-        return $moneyFormatter->format($money);
     }
 }

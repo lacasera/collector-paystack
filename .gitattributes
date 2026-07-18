@@ -1,0 +1,38 @@
+# Keep development-only files out of the distributed package.
+#
+# `composer require` installs the archive GitHub builds from the tag, which
+# otherwise carries the whole test suite, the workbench application and the
+# frontend toolchain into every consumer's vendor directory.
+#
+# The compiled portal assets under public/ are NOT ignored — the package ships
+# them pre-built and the billing portal inlines them at runtime.
+
+/.github            export-ignore
+/.claude            export-ignore
+/tests              export-ignore
+/workbench          export-ignore
+/resources/js       export-ignore
+/build              export-ignore
+
+/.editorconfig      export-ignore
+/.eslintrc.json     export-ignore
+/.gitattributes     export-ignore
+/.gitignore         export-ignore
+/.styleci.yml       export-ignore
+/CONTRIBUTING.md    export-ignore
+/package.json       export-ignore
+/package-lock.json  export-ignore
+/yarn.lock          export-ignore
+/phpunit.xml        export-ignore
+/pint.json          export-ignore
+/playwright.config.ts export-ignore
+/postcss.config.js  export-ignore
+/tailwind.config.js export-ignore
+/testbench.yaml     export-ignore
+/tsconfig.json      export-ignore
+/vite.config.js     export-ignore
+/vitest.config.ts   export-ignore
+
+# Treat the pre-built bundle as generated so it does not swamp diffs.
+/public/js/app.js       linguist-generated=true -diff
+/public/css/collector.css linguist-generated=true -diff

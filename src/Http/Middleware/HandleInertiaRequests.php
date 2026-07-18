@@ -41,8 +41,17 @@ class HandleInertiaRequests extends Middleware
                 // Resolved from the named routes so the frontend follows the
                 // configured prefix instead of hard-coding "/collector".
                 'urls' => [
+                    // The host application's root, which may not sit at "/"
+                    // when the app is served from a subdirectory.
+                    'home' => url('/'),
                     'subscribe' => route('collector.new-subscription'),
                     'cancel' => route('collector.cancel-subscription'),
+                    'portal' => route('collector.portal'),
+                    'manage' => route('collector.manage'),
+                    // The portal forwards subscribers to the management page;
+                    // this flag is what lets them back in to switch plans.
+                    'changePlan' => route('collector.portal', ['change' => 1]),
+                    'updatePaymentMethod' => route('collector.update-payment-method'),
                 ],
             ],
         ]);

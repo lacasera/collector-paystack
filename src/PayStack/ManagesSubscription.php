@@ -6,6 +6,7 @@ use Collector\Collector;
 use Collector\Models\Subscription;
 use Collector\SubscriptionBuilder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 trait ManagesSubscription
 {
@@ -52,6 +53,113 @@ trait ManagesSubscription
             ->whereIn('paystack_plan', $planCodes)
             ->where('paystack_status', Subscription::ACTIVE_STATUS)
             ->isNotEmpty();
+    }
+
+    /**
+     * Pull every subscription PayStack holds for this customer.
+     *
+     * Walks the paginated endpoint so a customer with a long history is not
+     * silently truncated to the first page.
+     */
+    public function payStackSubscriptions(): Collection
+    {
+        if (! $this->hasPayStackId()) {
+            return collect();
+        }
+
+        $customerId = data_get($this->getAsPaystackCustomer(), 'id');
+
+        if (! $customerId) {
+            return collect();
+        }
+
+        $subscriptions = collect();
+        $page = 1;
+
+        do {
+            $response = $this->request->get('/subscription', [
+                'customer' => $customerId,
+                'perPage' => 100,
+                'page' => $page,
+            ]);
+
+            if (! $response->ok()) {
+                break;
+            }
+
+            $subscriptions = $subscriptions->concat($response->json('data') ?? []);
+
+            $pageCount = (int) data_get($response->json('meta'), 'pageCount', 1);
+        } while ($page++ < $pageCount);
+
+        return $subscriptions;
+    }
+
+    /**
+     * Reconcile the local subscriptions table against PayStack.
+     *
+     * PayStack is the source of truth: a subscription started outside the
+     * portal, or one whose local row was never written, would otherwise be
+     * invisible — and invisible subscriptions cannot be cancelled when the
+     * customer switches plans, which is how duplicate billing starts.
+     */
+    public function syncSubscriptions(): Collection
+    {
+        return $this->payStackSubscriptions()
+            ->filter(fn($remote) => data_get($remote, 'subscription_code'))
+            ->map(function ($remote) {
+                $status = $this->mapPayStackStatus(data_get($remote, 'status'));
+
+                return Subscription::$subscriptionModel::updateOrCreate(
+                    ['paystack_id' => data_get($remote, 'subscription_code')],
+                    [
+                        'user_id' => $this->id,
+                        'name' => data_get($remote, 'plan.name')
+                            ?? data_get($remote, 'plan.plan_code')
+                            ?? 'Subscription',
+                        'quantity' => data_get($remote, 'quantity') ?? 1,
+                        'paystack_email_token' => data_get($remote, 'email_token'),
+                        'paystack_status' => $status,
+                        'paystack_plan' => data_get($remote, 'plan.plan_code'),
+                        'ends_at' => $status === Subscription::CANCELLED_STATUS
+                            ? data_get($remote, 'next_payment_date')
+                            : null,
+                    ]
+                );
+            })
+            ->values();
+    }
+
+    /**
+     * Translate a PayStack subscription status into the package's vocabulary.
+     *
+     * PayStack's "non-renewing" means disabled but still valid until the period
+     * ends — the package models that as cancelled with an ends_at grace period.
+     */
+    protected function mapPayStackStatus(?string $status): string
+    {
+        return match ($status) {
+            'active' => Subscription::ACTIVE_STATUS,
+            default => Subscription::CANCELLED_STATUS,
+        };
+    }
+
+    /**
+     * Generate a PayStack-hosted link for managing a subscription's card.
+     *
+     * PayStack has no API for replacing a stored card, so updating a payment
+     * method is delegated to PayStack's own hosted page. The link is short
+     * lived, so it is generated on demand rather than stored.
+     */
+    public function subscriptionManageLink(string $code): ?string
+    {
+        $response = $this->request->get("/subscription/$code/manage/link");
+
+        if (! $response->ok()) {
+            return null;
+        }
+
+        return data_get($response->json('data'), 'link');
     }
 
     /**

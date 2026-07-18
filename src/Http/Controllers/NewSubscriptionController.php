@@ -23,8 +23,6 @@ class NewSubscriptionController
 
         $checkout = app(CreateSubscription::class)->create($collectable, $request->plan);
 
-        session(['spark.flash.success' => 'You have successfully subscribed to plan']);
-
         return response()->json(['redirect' => $checkout], 201);
     }
 }

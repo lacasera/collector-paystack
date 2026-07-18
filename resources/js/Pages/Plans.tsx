@@ -1,5 +1,5 @@
 import React from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import Layout from '../Layouts/Layout';
 import Plan from "../Components/Plan";
 
@@ -20,20 +20,24 @@ interface PlansProps {
     monthlyPlans: PlanData[];
     yearlyPlans: PlanData[];
     subscribed: string | null;
-    cancelation: boolean;
 }
 
-function displayPlans(plans: PlanData[], currentPlan: string | null, cancelation: boolean): React.JSX.Element[] {
-    return plans.map((plan, index) => <Plan key={index} plan={plan} currentPlan={currentPlan} cancelation={cancelation} />)
+function displayPlans(plans: PlanData[], currentPlan: string | null): React.JSX.Element[] {
+    return plans.map((plan, index) => <Plan key={index} plan={plan} currentPlan={currentPlan} />)
 }
 
 export default function Plans(props: PlansProps): React.JSX.Element {
     const [frequency, setFrequency] = React.useState<'monthly' | 'yearly'>('monthly')
+    const { collector } = usePage().props as any;
+
     return (
         <Layout>
             <Head title="Plans" />
             <div className='max-w-5xl mx-auto flex flex-col items-center px-5'>
-                <div className='max-w-[600px]'>
+                {/* w-full against the cap keeps the column at its full 600px:
+                    the parent centres its children, so without it the column
+                    shrinks to whatever the cards happen to contain. */}
+                <div className='w-full max-w-[600px]'>
 
                     <div className="mb-6 text-center">
                         <span className='rounded-full bg-[#CACED0]/60 w-[80px] h-[80px] 
@@ -46,8 +50,19 @@ export default function Plans(props: PlansProps): React.JSX.Element {
                         </p>
 
                         <p className="w-full block text-lg text-gray-900">
-                            You may choose one of the subscription plans below to get started.
+                            {props.subscribed
+                                ? 'Choose the plan you would like to switch to.'
+                                : 'You may choose one of the subscription plans below to get started.'}
                         </p>
+
+                        {props.subscribed && (
+                            <a
+                                href={collector.urls.manage}
+                                className="inline-block mt-3 text-sm font-semibold text-gray-700 underline hover:text-gray-900"
+                            >
+                                Back to your subscription
+                            </a>
+                        )}
                     </div>
 
                     <div className='text-center'>
@@ -77,8 +92,8 @@ export default function Plans(props: PlansProps): React.JSX.Element {
                     <div className='flex flex-col space-y-5'>
                         {
                             frequency === 'monthly'
-                                ? (displayPlans(props.monthlyPlans, props.subscribed, props.cancelation))
-                                : (displayPlans(props.yearlyPlans, props.subscribed, props.cancelation))
+                                ? (displayPlans(props.monthlyPlans, props.subscribed))
+                                : (displayPlans(props.yearlyPlans, props.subscribed))
                         }
                     </div>
                 </div>
