@@ -2,6 +2,22 @@
 
 All notable changes to `collector-paystack` will be documented in this file.
 
+## 1.0.1 - 2026-07-21
+
+Documentation only — no functional change. `src/`, `config/`, `routes/`,
+`database/` and `resources/views/` are identical to 1.0.0.
+
+### Docs
+- Added screenshots of the billing portal and the subscription management
+  portal to the README, captured from the running portal
+
+### Internal
+- The workbench now models PayStack more faithfully (plan amounts, billing
+  dates, the subscription's authorization, and the transaction and subscription
+  list endpoints), so the end-to-end suite exercises the management portal with
+  realistic data instead of empty state
+- `.gitattributes` keeps the README screenshots out of the distributed package
+
 ## 1.0.0 - 2026-07-21
 
 First public release.

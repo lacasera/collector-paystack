@@ -1,6 +1,6 @@
 {
   "name": "collector-paystack",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A modern Laravel package for managing subscription billing with PayStack integration",
   "private": true,
   "type": "module",
