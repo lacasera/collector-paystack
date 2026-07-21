@@ -2,14 +2,12 @@
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/lacasera/collector-paystack.svg?style=flat-square)](https://packagist.org/packages/lacasera/collector-paystack)
 [![Total Downloads](https://img.shields.io/packagist/dt/lacasera/collector-paystack.svg?style=flat-square)](https://packagist.org/packages/lacasera/collector-paystack)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/lacasera/collector-paystack/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/lacasera/collector-paystack/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/lacasera/collector-paystack/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/lacasera/collector-paystack/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 
 A modern Laravel package for managing subscription billing with PayStack integration. Collector PayStack provides a complete billing portal with subscription management, payment processing, and customer billing features.
 
 ## Features
 
-- 🚀 Modern Laravel 10/11/12/13 support
+- 🚀 Laravel 12 and 13 support
 - 💳 Complete PayStack integration
 - 📊 Subscription management (create, update, cancel)
 - 🎨 Beautiful React-based billing portal  
@@ -21,8 +19,8 @@ A modern Laravel package for managing subscription billing with PayStack integra
 
 ## Requirements
 
-- PHP 8.2+
-- Laravel 10.0+, 11.0+, 12.0+, or 13.0+
+- PHP 8.2+ (8.3+ on Laravel 13)
+- Laravel 12.0+ or 13.0+
 - PayStack account and API keys
 
 ## Installation
