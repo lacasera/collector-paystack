@@ -52,29 +52,84 @@ class WorkbenchServiceProvider extends ServiceProvider
      */
     private function fakePaystack(): void
     {
-        $plan = ['plan_code' => 'PLN_worid7k3e8v5afz', 'name' => 'Basic'];
+        $plan = [
+            'plan_code' => 'PLN_worid7k3e8v5afz',
+            'name' => 'Basic',
+            'amount' => 500000,
+            'currency' => 'NGN',
+        ];
+
+        $authorization = [
+            'card_type' => 'visa', 'last4' => '4081', 'exp_month' => '12', 'exp_year' => '2030',
+            'bank' => 'Test Bank', 'channel' => 'card', 'reusable' => true,
+            'signature' => 'SIG_e2e',
+        ];
 
         $subscription = [
             'subscription_code' => 'SUB_e2e',
             'email_token' => 'tok_e2e',
             'status' => 'active',
             'amount' => 500000,
+            'quantity' => 1,
             'plan' => $plan,
+            'authorization' => $authorization,
+            'next_payment_date' => now()->addMonth()->toIso8601String(),
             'most_recent_invoice' => ['period_end' => now()->addMonth()->toIso8601String()],
         ];
 
         $customer = [
+            'id' => 315346652,
             'customer_code' => 'CUS_e2e',
             'email' => 'e2e@example.com',
-            'authorizations' => [[
-                'card_type' => 'visa', 'last4' => '4081', 'exp_month' => '12', 'exp_year' => '2030',
-            ]],
+            // Repeated deliberately: PayStack stores one authorization per
+            // transaction, so the portal has to collapse them by signature.
+            'authorizations' => [$authorization, $authorization],
             'subscriptions' => [$subscription],
         ];
 
+        $transactions = collect([
+            [500000, 'success', 0],
+            [500000, 'success', 1],
+            [1500000, 'success', 2],
+            [500000, 'abandoned', 3],
+            [500000, 'success', 4],
+        ])->map(fn($row, $i) => [
+            'reference' => 'REF_e2e_' . $i,
+            'amount' => $row[0],
+            'currency' => 'NGN',
+            'status' => $row[1],
+            'channel' => 'card',
+            'paid_at' => now()->subMonths($row[2])->toIso8601String(),
+            'created_at' => now()->subMonths($row[2])->toIso8601String(),
+            'authorization' => $authorization,
+        ])->all();
+
+        // Ordering matters: Http::fake returns the first pattern that matches,
+        // so the query-string endpoints must precede the broader path ones.
         Http::fake([
             'https://api.paystack.co/plan*' => Http::response(['status' => true, 'data' => $this->planCatalogue()]),
             'https://api.paystack.co/customer*' => Http::response(['status' => true, 'data' => $customer]),
+            // Mirrors PayStack moving a disabled subscription to "non-renewing"
+            // rather than deleting it. Without this the reconciliation on the
+            // next page load would keep resurrecting a cancelled subscription.
+            'https://api.paystack.co/subscription?*' => function () use ($subscription) {
+                $subscription['status'] = $this->e2eSubscriptionStatus();
+
+                return Http::response([
+                    'status' => true,
+                    'data' => [$subscription],
+                    'meta' => ['total' => 1, 'perPage' => 100, 'page' => 1, 'pageCount' => 1],
+                ]);
+            },
+            'https://api.paystack.co/transaction?*' => Http::response([
+                'status' => true,
+                'data' => $transactions,
+                'meta' => ['total' => count($transactions), 'perPage' => 20, 'page' => 1, 'pageCount' => 1],
+            ]),
+            'https://api.paystack.co/subscription/*/manage/link' => Http::response([
+                'status' => true,
+                'data' => ['link' => '/e2e/paystack-manage'],
+            ]),
             'https://api.paystack.co/transaction/initialize*' => Http::response(['status' => true, 'data' => [
                 // Relative so the browser resolves it against the served origin
                 // (host:port), standing in for PayStack's hosted checkout URL.
@@ -89,8 +144,27 @@ class WorkbenchServiceProvider extends ServiceProvider
                 'plan_object' => $plan,
             ]]),
             'https://api.paystack.co/subscription/disable*' => Http::response(['status' => true, 'data' => ['message' => 'ok']]),
-            'https://api.paystack.co/subscription/*' => Http::response(['status' => true, 'data' => $subscription]),
+            'https://api.paystack.co/subscription/*' => function () use ($subscription) {
+                $subscription['status'] = $this->e2eSubscriptionStatus();
+
+                return Http::response(['status' => true, 'data' => $subscription]);
+            },
         ]);
+    }
+
+    /**
+     * What PayStack would report for the seeded subscription.
+     *
+     * Derived from the local row so that disabling it here is reflected on the
+     * next read, the way a real cancellation would be.
+     */
+    private function e2eSubscriptionStatus(): string
+    {
+        $local = Subscription::query()->where('paystack_id', 'SUB_e2e')->first();
+
+        return $local && $local->paystack_status !== Subscription::ACTIVE_STATUS
+            ? 'non-renewing'
+            : 'active';
     }
 
     /**

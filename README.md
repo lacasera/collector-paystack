@@ -5,6 +5,14 @@
 
 A modern Laravel package for managing subscription billing with PayStack integration. Collector PayStack provides a complete billing portal with subscription management, payment processing, and customer billing features.
 
+<p align="center">
+  <img src="art/billing-portal.png" alt="The billing portal, listing the configured plans with a monthly/yearly toggle" width="720">
+</p>
+
+<p align="center">
+  <img src="art/manage-overview.png" alt="The subscription management portal, showing the current plan, next charge and payment method" width="880">
+</p>
+
 ## Features
 
 - 🚀 Laravel 12 and 13 support
@@ -165,6 +173,14 @@ Subscribed customers can manage their billing at **`/collector/billing/manage`**
 
 The portal reconciles with PayStack on load, so subscriptions started or
 cancelled outside your application still show up.
+
+<p align="center">
+  <img src="art/manage-payment-history.png" alt="The payment history section, listing PayStack transactions with amount, status and method" width="880">
+</p>
+
+<p align="center">
+  <img src="art/manage-payment-methods.png" alt="The payment methods section, with a button that hands off to PayStack's hosted card update page" width="880">
+</p>
 
 #### Linking to a section
 

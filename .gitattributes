@@ -9,6 +9,8 @@
 
 /.github            export-ignore
 /.claude            export-ignore
+# README screenshots: rendered by GitHub, useless in a vendor directory.
+/art                export-ignore
 /tests              export-ignore
 /workbench          export-ignore
 /resources/js       export-ignore
