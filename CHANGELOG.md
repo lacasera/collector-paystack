@@ -2,7 +2,7 @@
 
 All notable changes to `collector-paystack` will be documented in this file.
 
-## 1.0.0 - 2026-07-20
+## 1.0.0 - 2026-07-21
 
 First public release.
 

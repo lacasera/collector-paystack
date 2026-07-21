@@ -22,7 +22,7 @@ class SubscribeUserToPlan
             return;
         }
 
-       
+
         $attributes = [];
 
         // Without the customer code hasPayStackId() stays false and
